@@ -9,6 +9,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Foundation", "Foundation\Fo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderSystem", "RenderSystem\RenderSystem.vcxproj", "{F8AD01D5-10D8-4721-B8EA-529AF81C23BE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{F7926C73-1A10-491B-A113-EBB5A2DF0E7D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{C1CC42FC-F7A3-4F55-9912-8D06A94B1DC9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameServer", "GameServer\GameServer.vcxproj", "{E107522F-A23B-4506-9A0A-12DBD9D34475}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraphicSystem", "GraphicSystem\GraphicSystem.vcxproj", "{034B244B-27E5-4DEB-9ED1-23BCE4BB458E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +35,14 @@ Global
 		{F8AD01D5-10D8-4721-B8EA-529AF81C23BE}.Debug|Win32.Build.0 = Debug|Win32
 		{F8AD01D5-10D8-4721-B8EA-529AF81C23BE}.Release|Win32.ActiveCfg = Release|Win32
 		{F8AD01D5-10D8-4721-B8EA-529AF81C23BE}.Release|Win32.Build.0 = Release|Win32
+		{E107522F-A23B-4506-9A0A-12DBD9D34475}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E107522F-A23B-4506-9A0A-12DBD9D34475}.Debug|Win32.Build.0 = Debug|Win32
+		{E107522F-A23B-4506-9A0A-12DBD9D34475}.Release|Win32.ActiveCfg = Release|Win32
+		{E107522F-A23B-4506-9A0A-12DBD9D34475}.Release|Win32.Build.0 = Release|Win32
+		{034B244B-27E5-4DEB-9ED1-23BCE4BB458E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{034B244B-27E5-4DEB-9ED1-23BCE4BB458E}.Debug|Win32.Build.0 = Debug|Win32
+		{034B244B-27E5-4DEB-9ED1-23BCE4BB458E}.Release|Win32.ActiveCfg = Release|Win32
+		{034B244B-27E5-4DEB-9ED1-23BCE4BB458E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -34,5 +50,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7F9DA79A-ADD4-4665-AF98-D6A1CDED0F78} = {FA70A978-3155-4472-A763-11F43A803D04}
 		{F8AD01D5-10D8-4721-B8EA-529AF81C23BE} = {FA70A978-3155-4472-A763-11F43A803D04}
+		{034B244B-27E5-4DEB-9ED1-23BCE4BB458E} = {F7926C73-1A10-491B-A113-EBB5A2DF0E7D}
+		{E107522F-A23B-4506-9A0A-12DBD9D34475} = {C1CC42FC-F7A3-4F55-9912-8D06A94B1DC9}
 	EndGlobalSection
 EndGlobal

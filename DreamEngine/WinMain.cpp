@@ -1,14 +1,7 @@
 #include <windows.h>
+#include "GameServer.h"
 
-//--------------------------------------------------------------------------------------
-// Name: CleanUp
-// Desc: 释放资源
-//--------------------------------------------------------------------------------------
-void CleanUp()
-{
-
-}
-
+using namespace Server;
 //--------------------------------------------------------------------------------------
 // Name: WindowProc
 // Desc: 窗口过程函数
@@ -79,9 +72,9 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,
    }
 
    
-   g_Init = new CD3DInit();
+   GameServer* gameServer = new GameServer();
 
-   if(g_Init->GameInit(hWnd))
+   if(gameServer->Init(hWnd))
    {
 	   ShowWindow( hWnd, SW_SHOWDEFAULT );
        UpdateWindow( hWnd );
@@ -98,14 +91,13 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,
        }
 	   else
        {
-		   g_Init->Render();
+		   gameServer->Run();
 
 	   }
 
     }
+    gameServer->Close();
 
-
-    CleanUp();
     UnregisterClass("create window", wc.hInstance);
 
     return 1;
