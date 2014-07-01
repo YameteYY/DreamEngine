@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DreamEngine", "DreamEngine\DreamEngine.vcxproj", "{2FC6034E-0209-4BCE-B2DA-840D14F074F8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Foundation", "Foundation", "{FA70A978-3155-4472-A763-11F43A803D04}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Foundation", "Foundation\Foundation.vcxproj", "{7F9DA79A-ADD4-4665-AF98-D6A1CDED0F78}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderSystem", "RenderSystem\RenderSystem.vcxproj", "{F8AD01D5-10D8-4721-B8EA-529AF81C23BE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2FC6034E-0209-4BCE-B2DA-840D14F074F8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2FC6034E-0209-4BCE-B2DA-840D14F074F8}.Debug|Win32.Build.0 = Debug|Win32
+		{2FC6034E-0209-4BCE-B2DA-840D14F074F8}.Release|Win32.ActiveCfg = Release|Win32
+		{2FC6034E-0209-4BCE-B2DA-840D14F074F8}.Release|Win32.Build.0 = Release|Win32
+		{7F9DA79A-ADD4-4665-AF98-D6A1CDED0F78}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7F9DA79A-ADD4-4665-AF98-D6A1CDED0F78}.Debug|Win32.Build.0 = Debug|Win32
+		{7F9DA79A-ADD4-4665-AF98-D6A1CDED0F78}.Release|Win32.ActiveCfg = Release|Win32
+		{7F9DA79A-ADD4-4665-AF98-D6A1CDED0F78}.Release|Win32.Build.0 = Release|Win32
+		{F8AD01D5-10D8-4721-B8EA-529AF81C23BE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F8AD01D5-10D8-4721-B8EA-529AF81C23BE}.Debug|Win32.Build.0 = Debug|Win32
+		{F8AD01D5-10D8-4721-B8EA-529AF81C23BE}.Release|Win32.ActiveCfg = Release|Win32
+		{F8AD01D5-10D8-4721-B8EA-529AF81C23BE}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7F9DA79A-ADD4-4665-AF98-D6A1CDED0F78} = {FA70A978-3155-4472-A763-11F43A803D04}
+		{F8AD01D5-10D8-4721-B8EA-529AF81C23BE} = {FA70A978-3155-4472-A763-11F43A803D04}
+	EndGlobalSection
+EndGlobal

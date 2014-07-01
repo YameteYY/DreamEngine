@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Engine\foundation\math\bbox.cc" />
+    <ClCompile Include="..\Engine\foundation\math\float3.cc" />
+    <ClCompile Include="..\Engine\foundation\math\intersection.cc" />
+    <ClCompile Include="..\Engine\foundation\math\line.cc" />
+    <ClCompile Include="..\Engine\foundation\math\MinMaxCurve.cc" />
+    <ClCompile Include="..\Engine\foundation\math\newMath\new_float4.cc" />
+    <ClCompile Include="..\Engine\foundation\math\newMath\new_matrix44.cc" />
+    <ClCompile Include="..\Engine\foundation\math\newMath\new_plane.cc" />
+    <ClCompile Include="..\Engine\foundation\math\newMath\new_quaternion.cc" />
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreMath.cc" />
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreMatrix3.cc" />
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreMatrix4.cc" />
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreQuaternion.cc" />
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreVector3.cc" />
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreVector4.cc" />
+    <ClCompile Include="..\Engine\foundation\math\size.cc" />
+    <ClCompile Include="..\Engine\foundation\math\sphere_.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Engine\foundation\math\bbox.h" />
+    <ClInclude Include="..\Engine\foundation\math\clipstatus.h" />
+    <ClInclude Include="..\Engine\foundation\math\color.h" />
+    <ClInclude Include="..\Engine\foundation\math\curve.h" />
+    <ClInclude Include="..\Engine\foundation\math\float2.h" />
+    <ClInclude Include="..\Engine\foundation\math\float3.h" />
+    <ClInclude Include="..\Engine\foundation\math\float4.h" />
+    <ClInclude Include="..\Engine\foundation\math\frustum.h" />
+    <ClInclude Include="..\Engine\foundation\math\intersection.h" />
+    <ClInclude Include="..\Engine\foundation\math\line.h" />
+    <ClInclude Include="..\Engine\foundation\math\matrix44.h" />
+    <ClInclude Include="..\Engine\foundation\math\MinMaxCurve.h" />
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_float4.h" />
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_matrix44.h" />
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_plane.h" />
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_point.h" />
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_quaternion.h" />
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_scalar.h" />
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_vector.h" />
+    <ClInclude Include="..\Engine\foundation\math\noise.h" />
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\asm_math.h" />
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreMath.h" />
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreMatrix3.h" />
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreMatrix4.h" />
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgrePrerequisites.h" />
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreQuaternion.h" />
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreVector3.h" />
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreVector4.h" />
+    <ClInclude Include="..\Engine\foundation\math\plane.h" />
+    <ClInclude Include="..\Engine\foundation\math\point.h" />
+    <ClInclude Include="..\Engine\foundation\math\point2d.h" />
+    <ClInclude Include="..\Engine\foundation\math\polar.h" />
+    <ClInclude Include="..\Engine\foundation\math\PolyCurve.h" />
+    <ClInclude Include="..\Engine\foundation\math\quaternion.h" />
+    <ClInclude Include="..\Engine\foundation\math\ray.h" />
+    <ClInclude Include="..\Engine\foundation\math\rectangle.h" />
+    <ClInclude Include="..\Engine\foundation\math\size.h" />
+    <ClInclude Include="..\Engine\foundation\math\sphere_.h" />
+    <ClInclude Include="..\Engine\foundation\math\transform44.h" />
+    <ClInclude Include="..\Engine\foundation\math\vector.h" />
+    <ClInclude Include="..\Engine\foundation\util\array.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7F9DA79A-ADD4-4665-AF98-D6A1CDED0F78}</ProjectGuid>
+    <RootNamespace>Foundation</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>E:\myspace\DreamEngine\Engine\foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;RENDERDEVICE_D3D9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

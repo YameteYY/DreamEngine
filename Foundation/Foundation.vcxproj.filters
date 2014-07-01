@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="math">
+      <UniqueIdentifier>{234528ff-473d-44fa-a013-7f8d438e049d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="util">
+      <UniqueIdentifier>{c33559e7-9afd-41df-b7af-9b1316281ea7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Engine\foundation\math\bbox.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\float3.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\intersection.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\line.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\MinMaxCurve.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\newMath\new_float4.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\newMath\new_matrix44.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\newMath\new_plane.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\newMath\new_quaternion.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreMath.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreMatrix3.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreMatrix4.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreQuaternion.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreVector3.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\OgreMath\OgreVector4.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\size.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\foundation\math\sphere_.cc">
+      <Filter>math</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Engine\foundation\math\bbox.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\clipstatus.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\color.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\curve.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\float2.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\float3.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\float4.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\frustum.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\intersection.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\line.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\matrix44.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\MinMaxCurve.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_float4.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_matrix44.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_plane.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_point.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_quaternion.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_scalar.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\newMath\new_vector.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\noise.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\asm_math.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreMath.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreMatrix3.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreMatrix4.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgrePrerequisites.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreQuaternion.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreVector3.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\OgreMath\OgreVector4.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\plane.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\point.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\point2d.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\polar.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\PolyCurve.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\quaternion.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\ray.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\rectangle.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\size.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\sphere_.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\transform44.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\math\vector.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\foundation\util\array.h">
+      <Filter>util</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
