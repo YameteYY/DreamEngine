@@ -29,6 +29,9 @@
     <ClCompile Include="Object\RenderObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RenderSystem\Camera.cpp">
+      <Filter>RenderSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameServer.h">
@@ -45,6 +48,9 @@
     </ClInclude>
     <ClInclude Include="Object\RenderObject.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem\Camera.h">
+      <Filter>RenderSystem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

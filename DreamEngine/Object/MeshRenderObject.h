@@ -5,11 +5,14 @@
 class MeshRenderObject : public RenderObject
 {
 public:
+	MeshRenderObject();
+	~MeshRenderObject();
+	bool Init(const char* meshName);
 	virtual void Render();
 private:
-	D3DXHANDLE mWorldMatrixHandle;
 	ID3DXMesh* mMesh;
-	D3DXHANDLE mTexHandle;
+	std::vector<D3DMATERIAL9> mMaterial;
+	std::vector<IDirect3DTexture9*> mTexture;
 };
 
 #endif

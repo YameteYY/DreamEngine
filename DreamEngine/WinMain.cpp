@@ -1,13 +1,17 @@
 #include <windows.h>
 #include "GameServer.h"
+#include "RenderSystem/D3DRender.h"
+#include "RenderSystem/Camera.h"
 
-using namespace Server;
 //--------------------------------------------------------------------------------------
 // Name: WindowProc
 // Desc: 窗口过程函数
 //--------------------------------------------------------------------------------------
+CCamera* g_camera = 0;
+
 LRESULT WINAPI WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
-{   switch( msg )
+{
+	switch( msg )
     {
         case WM_DESTROY:
             PostQuitMessage( 0 );
@@ -41,7 +45,7 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,
     BOOL        fMessage;
 
 	//创建和设置窗口类
-	wc.style         =  CS_HREDRAW | CS_VREDRAW;
+	wc.style         =  CS_DBLCLKS;
 	wc.lpfnWndProc   =  WindowProc;
 	wc.cbClsExtra    =  0;
 	wc.cbWndExtra    =  0;
@@ -53,18 +57,9 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,
 	wc.lpszClassName =  "create window";
 
 	RegisterClass(&wc);
-    hWnd = CreateWindowEx(	WS_EX_TOPMOST,
-		                    "create window",              
-							"create window title" ,        
-							WS_POPUP,                      
-							0,                             
-							0,                             
-							GetSystemMetrics(SM_CXSCREEN), 
-							GetSystemMetrics(SM_CYSCREEN), 
-							NULL,                          
-							NULL,                          
-                            hInstance,                     
-							NULL);                        
+	hWnd = CreateWindow( "create window", "test", WS_OVERLAPPEDWINDOW,
+		0, 0, 800, 600, 0,
+		NULL, hInstance, 0 );                   
 
    if(!hWnd)  
    {
@@ -79,10 +74,11 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,
 	   ShowWindow( hWnd, SW_SHOWDEFAULT );
        UpdateWindow( hWnd );
    }
- 
-  
+   g_camera = D3DRender::Instance()->GetCamera();
+   PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE);
    while(msg.message != WM_QUIT)
    {
+	   g_camera->HandleMessage(hWnd,msg.message,msg.lParam,msg.wParam);
 	   fMessage = PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE);
 	   if(fMessage)
        {
