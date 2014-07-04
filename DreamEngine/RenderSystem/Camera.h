@@ -19,6 +19,8 @@ public:
 	//返回当前的投影矩阵
 	const D3DXMATRIX *GetProjTrans() const;
 
+	const D3DXVECTOR3& GetEyePos() const;
+
 	//设置摄像机移动速度
 	void SetMoveVelocity( float fVelocity );
 
@@ -81,6 +83,11 @@ public:
 	/// 摄像机俯仰角最小值
 	float m_fMinPitch;
 };
+
+inline const D3DXVECTOR3& CCamera::GetEyePos() const
+{
+	return m_EyePos;
+}
 
 // 第一人称摄像机类，提供第一人称方式的摄像机移动和旋转
 //此类包括了如下知识点：

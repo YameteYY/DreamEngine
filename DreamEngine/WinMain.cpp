@@ -1,13 +1,11 @@
 #include <windows.h>
 #include "GameServer.h"
 #include "RenderSystem/D3DRender.h"
-#include "RenderSystem/Camera.h"
 
 //--------------------------------------------------------------------------------------
 // Name: WindowProc
 // Desc: 窗口过程函数
 //--------------------------------------------------------------------------------------
-CCamera* g_camera = 0;
 
 LRESULT WINAPI WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -74,11 +72,9 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,
 	   ShowWindow( hWnd, SW_SHOWDEFAULT );
        UpdateWindow( hWnd );
    }
-   g_camera = D3DRender::Instance()->GetCamera();
    PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE);
    while(msg.message != WM_QUIT)
    {
-	   g_camera->HandleMessage(hWnd,msg.message,msg.lParam,msg.wParam);
 	   fMessage = PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE);
 	   if(fMessage)
        {

@@ -21,8 +21,10 @@ public:
 	void SetCamera(CCamera* camera);
 	CCamera* GetCamera();
 	void AddRenderObject(RenderObject* obj);
+	void AddLight(Light* light);
 private:
 	std::vector<RenderObject*> mRenderObjectList;
+	std::vector<Light*>		mLight;
 	CCamera*				g_camera;
 	static D3DRender* m_pInstance;
 	D3DRender();
@@ -32,6 +34,10 @@ private:
 inline void D3DRender::AddRenderObject(RenderObject* obj)
 {
 	mRenderObjectList.push_back(obj);
+}
+inline void D3DRender::AddLight(Light* light)
+{
+	mLight.push_back(light);
 }
 inline LPDIRECT3DDEVICE9 D3DRender::GetDevice()
 {

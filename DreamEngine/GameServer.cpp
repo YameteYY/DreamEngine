@@ -1,6 +1,7 @@
 #include "GameServer.h"
 #include "RenderSystem/D3DRender.h"
 #include "Object/MeshRenderObject.h"
+#include "RenderSystem/Light.h"
 
 bool GameServer::Init(HWND hWnd)
 {
@@ -8,29 +9,27 @@ bool GameServer::Init(HWND hWnd)
 	mD3DRender->InitD3D(hWnd);
 
 	// Setup the camera's view parameters
-	D3DXVECTOR3 vecEye( 0.0f, 5.0f, 5.0f );
-	D3DXVECTOR3 vecAt ( 0.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 vecUp ( 0.0f, 1.0f, 0.0f );
-	g_camera.SetViewParams( vecEye, vecAt,vecUp);
-	g_camera.SetProjParams(45.0f,4.0f/3.0f,1.0f,1000.0f);
+	D3DXVECTOR3 vecUp ( 1.0f, 0.0f, 0.0f );
+	D3DXVECTOR3 vecEye( 0.0f, 0.0f, -15.0f );
+	D3DXVECTOR3 vecAt ( 0.0f, 0.0f, -0.0f );
+	g_camera.SetViewParams(vecEye,vecAt,vecUp);
 	mD3DRender->SetCamera(&g_camera);
 
 	mMesh = new MeshRenderObject();
 	mMesh->SetEffectFromFile("res/mesh.fx");
-	mMesh->Init("res/tiny.x");
+	mMesh->Init("Media/Disc.x");
 
-	D3DXMATRIX word;
-	D3DXMatrixScaling(&word,0.01,0.01,0.01);
+	D3DXMATRIX word,scale,rotation;
+	D3DXMatrixScaling(&scale,0.1,0.1,0.1);
+	D3DXMatrixRotationZ(&rotation,90);
+	D3DXMatrixMultiply(&word,&rotation,&scale);
 	mMesh->SetWordTransform(word);
 
 	mD3DRender->AddRenderObject(mMesh);
 
-	//mMesh = new MeshRenderObject();
-//	mMesh->SetEffectFromFile("res/mesh.fx");
-//	mMesh->Init("res/mountain.x");
 
-
-//	mD3DRender->AddRenderObject(mMesh);
+	Light* light = new Light();
+	light->SetDirection(D3DXVECTOR4(1.0f,-1.0,1.0f,0.0f));
 	return true;
 }
 void GameServer::Close()

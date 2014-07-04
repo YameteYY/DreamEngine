@@ -44,8 +44,6 @@ HRESULT  D3DRender::InitD3D( HWND hWnd)
 	{
 		return E_FAIL;
 	}
-
-
 	return S_OK;
 }
 void D3DRender::Render()

@@ -12,7 +12,8 @@ public:
 private:
 	ID3DXMesh* mMesh;
 	std::vector<D3DMATERIAL9> mMaterial;
-	std::vector<IDirect3DTexture9*> mTexture;
+	std::vector<IDirect3DTexture9*> mDiffuseMap;
+	IDirect3DTexture9* mNormalMap;
 };
 
 #endif

@@ -5,7 +5,7 @@
 MeshRenderObject::MeshRenderObject()
 {
 	mMaterial.clear();
-	mTexture.clear();
+	mDiffuseMap.clear();
 }
 MeshRenderObject::~MeshRenderObject()
 {
@@ -48,21 +48,31 @@ bool MeshRenderObject::Init(const char* meshName)
 			if( mtrls[i].pTextureFilename != 0 )
 			{
 				char str[64];
-				sprintf(str,"res/%s",mtrls[i].pTextureFilename);
+				sprintf(str,"Media/%s",mtrls[i].pTextureFilename);
 				IDirect3DTexture9* tex = 0;
 				D3DXCreateTextureFromFile(
 					Device,
 					str,
 					&tex);
-				mTexture.push_back( tex );
+				mDiffuseMap.push_back( tex );
 			}
 			else
 			{
-				mTexture.push_back( 0 );
+				IDirect3DTexture9* tex = 0;
+				D3DXCreateTextureFromFile(
+					Device,
+					"Media/rocks.jpg",
+					&tex);
+				mDiffuseMap.push_back( tex );
 			}
 		}
 	}
 	SAFE_RELEASE(mtrlBuffer);
+
+	D3DXCreateTextureFromFile(
+		Device,
+		"Media/rocks_NM_height.tga",
+		&mNormalMap);
 	return true;
 }
 void MeshRenderObject::Render()
@@ -75,34 +85,18 @@ void MeshRenderObject::Render()
 	D3DXMATRIX vp;
 	D3DXMatrixMultiply(&vp,mView,mProj);
 	mEffect->SetMatrix("g_mWorldViewProjection",&vp);
-	/*
-	D3DXVECTOR3 position( cosf(1.0) * 10.0f, 50, sinf(1.0) * 10.0f );
-	D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-	D3DXMATRIX V;
-	D3DXMatrixLookAtLH(&V, &position, &target, &up);
 
-	D3DXMATRIX W, P;
-
-	D3DXMatrixIdentity(&W);
-	mEffect->SetMatrix("g_mWorld",&W);
-
-	D3DXMatrixPerspectiveFovLH(
-		&P,	D3DX_PI * 0.25f, // 45 - degree
-		(float)800 / (float)600,
-		1.0f, 1000.0f);
-
-	D3DXMATRIX vp;
-	D3DXMatrixMultiply(&vp,&V,&P);
-	mEffect->SetMatrix( "g_mWorldViewProjection", &vp);
-	*/
 	mEffect->SetTechnique(mTechHandle);
 	UINT numPasses = 0;
 	mEffect->Begin(&numPasses,0);
+	mEffect->SetTexture("NormalMap",mNormalMap);
+	mEffect->SetVector("g_LightDir",&D3DXVECTOR4(0,-1,0,0));
+	const D3DXVECTOR3& eyePos = camera->GetEyePos();
+	mEffect->SetVector("g_EyePos",&D3DXVECTOR4(eyePos.x,eyePos.y,eyePos.z,1.0f) );
 	for (int i=0;i<mNumMesh;i++)
 	{
 		mEffect->BeginPass(i);
-		mEffect->SetTexture("Tex",mTexture[i]);
+		mEffect->SetTexture("DiffuseMap",mDiffuseMap[i]);
 		mMesh->DrawSubset(i);
 		mEffect->EndPass();
 	}
