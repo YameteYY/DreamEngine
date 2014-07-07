@@ -32,6 +32,9 @@
     <ClCompile Include="RenderSystem\Camera.cpp">
       <Filter>RenderSystem</Filter>
     </ClCompile>
+    <ClCompile Include="RenderSystem\Light.cpp">
+      <Filter>RenderSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameServer.h">
@@ -50,6 +53,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RenderSystem\Camera.h">
+      <Filter>RenderSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem\Light.h">
       <Filter>RenderSystem</Filter>
     </ClInclude>
   </ItemGroup>

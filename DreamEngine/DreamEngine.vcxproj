@@ -72,6 +72,7 @@
     <ClCompile Include="Object\RenderObject.cpp" />
     <ClCompile Include="RenderSystem\Camera.cpp" />
     <ClCompile Include="RenderSystem\D3DRender.cpp" />
+    <ClCompile Include="RenderSystem\Light.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -81,6 +82,7 @@
     <ClInclude Include="RenderSystem\Camera.h" />
     <ClInclude Include="RenderSystem\D3DHeader.h" />
     <ClInclude Include="RenderSystem\D3DRender.h" />
+    <ClInclude Include="RenderSystem\Light.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

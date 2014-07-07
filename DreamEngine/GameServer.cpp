@@ -9,11 +9,13 @@ bool GameServer::Init(HWND hWnd)
 	mD3DRender->InitD3D(hWnd);
 
 	// Setup the camera's view parameters
-	D3DXVECTOR3 vecUp ( 1.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 vecEye( 0.0f, 0.0f, -15.0f );
-	D3DXVECTOR3 vecAt ( 0.0f, 0.0f, -0.0f );
+	D3DXVECTOR3 vecUp ( 0.0f, 0.0f, 1.0f );
+	D3DXVECTOR3 vecEye( 0.0f, 15.0f, 0.0f );
+	D3DXVECTOR3 vecAt ( 0.0f, 0.0f, 0.0f );
 	g_camera.SetViewParams(vecEye,vecAt,vecUp);
 	mD3DRender->SetCamera(&g_camera);
+
+	g_camera.SetProjParams(D3DX_PI * 0.25f,(float)4.0f / (float)3.0f,1.0f,1000.0f);
 
 	mMesh = new MeshRenderObject();
 	mMesh->SetEffectFromFile("res/mesh.fx");

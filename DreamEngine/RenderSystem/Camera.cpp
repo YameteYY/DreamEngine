@@ -349,7 +349,7 @@ void  CRPGCamera::SetCenter(const D3DXVECTOR3 &vCenter)
 
 LRESULT CRPGCamera::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ProcessKey(2);
+	ProcessKey(5);
 	switch( msg )
 	{
 	case WM_MOUSEWHEEL: //Êó±ê¹öÂÖ

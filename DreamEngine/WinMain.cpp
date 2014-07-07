@@ -1,6 +1,7 @@
 #include <windows.h>
 #include "GameServer.h"
 #include "RenderSystem/D3DRender.h"
+#include "RenderSystem/Camera.h"
 
 //--------------------------------------------------------------------------------------
 // Name: WindowProc
@@ -56,7 +57,7 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,
 
 	RegisterClass(&wc);
 	hWnd = CreateWindow( "create window", "test", WS_OVERLAPPEDWINDOW,
-		0, 0, 800, 600, 0,
+		50, 50, 800, 600, 0,
 		NULL, hInstance, 0 );                   
 
    if(!hWnd)  
@@ -66,16 +67,18 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,
 
    
    GameServer* gameServer = new GameServer();
-
+  
    if(gameServer->Init(hWnd))
    {
 	   ShowWindow( hWnd, SW_SHOWDEFAULT );
        UpdateWindow( hWnd );
    }
    PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE);
+   CCamera* g_camera = D3DRender::Instance()->GetCamera();
    while(msg.message != WM_QUIT)
    {
 	   fMessage = PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE);
+	   g_camera->HandleMessage(hWnd,msg.message,msg.wParam,msg.lParam);
 	   if(fMessage)
        {
 		   TranslateMessage(&msg);

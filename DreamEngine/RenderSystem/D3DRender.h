@@ -2,6 +2,7 @@
 #define __D3DRENDER_H__
 #include "D3DHeader.h"
 #include <vector>
+#include "Light.h"
 
 class CCamera;
 class RenderObject;
