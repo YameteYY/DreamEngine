@@ -61,7 +61,7 @@ bool MeshRenderObject::Init(const char* meshName)
 				IDirect3DTexture9* tex = 0;
 				D3DXCreateTextureFromFile(
 					Device,
-					"Media/rocks.jpg",
+					"Media/wood.jpg",
 					&tex);
 				mDiffuseMap.push_back( tex );
 			}
@@ -71,12 +71,124 @@ bool MeshRenderObject::Init(const char* meshName)
 
 	D3DXCreateTextureFromFile(
 		Device,
-		"Media/rocks_NM_height.tga",
+		"Media/four_NM_height.tga",
 		&mNormalMap);
+
+	// Create a new vertex declaration to hold all the required data
+	const D3DVERTEXELEMENT9 vertexDecl[] =
+	{
+		{ 0, 0,  D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },
+		{ 0, 32, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT,  0 },
+		{ 0, 44, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
+		D3DDECL_END()
+	};
+
+	LPD3DXMESH pTempMesh = NULL;
+
+	// Clone mesh to match the specified declaration: 
+	if( FAILED( mMesh->CloneMesh( mMesh->GetOptions(), vertexDecl, Device, &pTempMesh ) ) )
+	{
+		SAFE_RELEASE( pTempMesh );
+		return E_FAIL;
+	}
+
+	//====================================================================//
+	// Check if the old declaration contains normals, tangents, binormals //
+	//====================================================================//
+	bool bHadNormal = false;
+	bool bHadTangent = false;
+	bool bHadBinormal = false;
+
+	D3DVERTEXELEMENT9 vertexOldDecl[ MAX_FVF_DECL_SIZE ];
+
+	if( mMesh && SUCCEEDED( mMesh->GetDeclaration( vertexOldDecl ) ) )
+	{
+		// Go through the declaration and look for the right channels, hoping for a match:
+		for( UINT iChannelIndex = 0; iChannelIndex < D3DXGetDeclLength( vertexOldDecl ); iChannelIndex++ )
+		{
+			if( vertexOldDecl[iChannelIndex].Usage == D3DDECLUSAGE_NORMAL )
+			{
+				bHadNormal = true;
+			}
+
+			if( vertexOldDecl[iChannelIndex].Usage == D3DDECLUSAGE_TANGENT )
+			{
+				bHadTangent = true;
+			}
+
+			if( vertexOldDecl[iChannelIndex].Usage == D3DDECLUSAGE_BINORMAL )
+			{
+				bHadBinormal = true;
+			}
+		}
+	}
+
+	if( pTempMesh == NULL && ( bHadNormal == false || bHadTangent == false || bHadBinormal == false ) )
+	{
+		// We failed to clone the mesh and we need the tangent space for our effect:
+		return E_FAIL;
+	}
+
+	//==============================================================//
+	// Generate normals / tangents / binormals if they were missing //
+	//==============================================================//
+	SAFE_RELEASE( mMesh );
+	mMesh = pTempMesh;
+
+	if( !bHadNormal )
+	{
+		// Compute normals in case the meshes have them
+		D3DXComputeNormals( mMesh, NULL );
+	}
+
+	DWORD* rgdwAdjacency = NULL;
+	rgdwAdjacency = new DWORD[ mMesh->GetNumFaces() * 3 ];
+
+	if( rgdwAdjacency == NULL )
+	{
+		return E_OUTOFMEMORY;
+	}
+	mMesh->GenerateAdjacency( 1e-6f, rgdwAdjacency );
+
+	// Optimize the mesh for this graphics card's vertex cache 
+	// so when rendering the mesh's triangle list the vertices will 
+	// cache hit more often so it won't have to re-execute the vertex shader 
+	// on those vertices so it will improve perf.     
+	mMesh->OptimizeInplace( D3DXMESHOPT_VERTEXCACHE, rgdwAdjacency, NULL, NULL, NULL );
+
+	if( !bHadTangent || !bHadBinormal )
+	{
+		ID3DXMesh* pNewMesh;
+
+		// Compute tangents, which are required for normal mapping
+		if( FAILED( D3DXComputeTangentFrameEx( mMesh, D3DDECLUSAGE_TEXCOORD, 0, D3DDECLUSAGE_TANGENT, 0,
+			D3DDECLUSAGE_BINORMAL, 0,
+			D3DDECLUSAGE_NORMAL, 0, 0, rgdwAdjacency, -1.01f,
+			-0.01f, -1.01f, &pNewMesh, NULL ) ) )
+		{
+			return E_FAIL;
+		}
+
+		SAFE_RELEASE( mMesh );
+		mMesh = pNewMesh;
+	}
+
+	SAFE_DELETE_ARRAY( rgdwAdjacency );
+
 	return true;
 }
 void MeshRenderObject::Render()
 {
+	if( GetKeyState('N') & 0x8000 )
+	{
+		mTechHandle = mEffect->GetTechniqueByName("NMTechnique");
+	}
+	else if( GetKeyState('P') & 0x8000 )
+	{
+		mTechHandle = mEffect->GetTechniqueByName("PMTechnique");
+	}
 	CCamera* camera = D3DRender::Instance()->GetCamera();
 	
 	mEffect->SetMatrix("g_mWorld",&mWord);
@@ -90,7 +202,7 @@ void MeshRenderObject::Render()
 	UINT numPasses = 0;
 	mEffect->Begin(&numPasses,0);
 	mEffect->SetTexture("NormalMap",mNormalMap);
-	mEffect->SetVector("g_LightDir",&D3DXVECTOR4(0,-1,0,0));
+	mEffect->SetVector("g_LightDir",&D3DXVECTOR4(1,-1,0,0));
 	const D3DXVECTOR3& eyePos = camera->GetEyePos();
 	mEffect->SetVector("g_EyePos",&D3DXVECTOR4(eyePos.x,eyePos.y,eyePos.z,1.0f) );
 	for (int i=0;i<mNumMesh;i++)

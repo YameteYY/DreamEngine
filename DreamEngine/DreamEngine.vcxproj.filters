@@ -12,6 +12,9 @@
     <Filter Include="RenderSystem">
       <UniqueIdentifier>{432781f4-dd8d-4840-8548-aa9e8d1e0183}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Media">
+      <UniqueIdentifier>{73fa80ba-5f0f-404f-8376-5130e122854a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -58,5 +61,10 @@
     <ClInclude Include="RenderSystem\Light.h">
       <Filter>RenderSystem</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\mesh.fx">
+      <Filter>Media</Filter>
+    </None>
   </ItemGroup>
 </Project>

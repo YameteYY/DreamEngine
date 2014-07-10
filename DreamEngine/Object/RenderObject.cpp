@@ -38,7 +38,7 @@ bool RenderObject::SetEffectFromFile(const char* shaderFile)
 		return false;
 	}
 
-	mTechHandle = mEffect->GetTechniqueByName("LightAndTexture");
+	mTechHandle = mEffect->GetTechniqueByName("NMTechnique");
 
 	/*
 	const D3DVERTEXELEMENT9 decl[] = 

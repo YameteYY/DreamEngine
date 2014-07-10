@@ -28,6 +28,7 @@ struct VS_OUTPUT
     float2 TextureUV  : TEXCOORD0;  // vertex texture coord
 	float3 LightDirT  : TEXCOORD1;
 	float3 ViewDirT	  : TEXCOORD2;
+	float2 vParallaxOffsetTS : TEXCOORD3;
 };
 VS_OUTPUT mainVS( float4 vPos : POSITION0, 
                   float3 vInNormalOS : NORMAL0,
@@ -37,8 +38,9 @@ VS_OUTPUT mainVS( float4 vPos : POSITION0,
                   )
 {
 		VS_OUTPUT outPut;
-		outPut.Position = mul(vPos,g_mWorld);
-		
+		float4 vPosition = mul(vPos,g_mWorld);
+		outPut.Position = mul(vPosition,g_mWorldViewProjection);
+
 		outPut.TextureUV = vTexCoord0;
 		float3 vNormalWS   = mul( vInNormalOS,   (float3x3) g_mWorld );
 		float3 vTangentWS  = mul( vInTangentOS,  (float3x3) g_mWorld );
@@ -48,22 +50,102 @@ VS_OUTPUT mainVS( float4 vPos : POSITION0,
 		vTangentWS  = normalize( vTangentWS );
 		vBinormalWS = normalize( vBinormalWS );
 
-		float3 vViewWS = g_EyePos - outPut.Position;
+		float3 vViewWS = g_EyePos - vPosition;
 
 		float3 vLightWS = g_LightDir;
 
 		float3x3 mWorldToTangent = float3x3( vTangentWS, vBinormalWS, vNormalWS );
-		outPut.LightDirT = mul( mWorldToTangent,g_LightDir);
+		outPut.LightDirT = mul( mWorldToTangent,vLightWS);
 		outPut.ViewDirT = mul( mWorldToTangent,vViewWS);
 
-		outPut.Position = mul(outPut.Position,g_mWorldViewProjection);
+		
+
+		float2 vParallaxDirection = normalize(  outPut.ViewDirT.xy );
+		float fLength         = length( outPut.ViewDirT );
+		float fParallaxLength = sqrt( fLength * fLength - outPut.ViewDirT.z * outPut.ViewDirT.z ) / outPut.ViewDirT.z; 
+		outPut.vParallaxOffsetTS = vParallaxDirection * fParallaxLength;
+		outPut.vParallaxOffsetTS *= 0.1;
 		return outPut;
 }
-
-
-float4 mainPS(VS_OUTPUT inPut) : COLOR0
+float4 pmPS(VS_OUTPUT inPut) : COLOR0
 {
+	 int  nNumSteps = 50;
+	 float3 vViewTS   = normalize( inPut.ViewDirT);
+     float3 vLightTS  = normalize( inPut.LightDirT);
 
+	 float4 cResultColor = float4( 0, 0, 0, 1 );
+	 float2 texCoord = inPut.TextureUV;
+
+	 float fCurrHeight = 0.0;
+	 float fStepSize = 1.0 / (float)nNumSteps;
+	 float fPrevHeight = 0.0;
+
+	 int nStepIndex = 0;
+	 float2 vTexOffsetPerStep = fStepSize * inPut.vParallaxOffsetTS;
+	 float2 vTexCurrentOffset = texCoord;
+	 float fCurrentBound = 1.0;
+	 float fParallaxAmount = 0.0;
+	 float2 pt1 = 0;
+	 float2 pt2 = 0;
+	 float2 texOffset2 = 0;
+
+	 while(nStepIndex < nNumSteps)
+	 {
+		vTexCurrentOffset -= vTexOffsetPerStep;
+
+		fCurrHeight = tex2D(normalMap,vTexCurrentOffset).a;
+
+		fCurrentBound -= fStepSize;
+
+		if(fCurrHeight > fCurrentBound)
+		{
+			pt1 = float2(fCurrentBound,fCurrHeight);
+			pt2 = float2(fCurrentBound + fStepSize,fPrevHeight);
+
+			texOffset2 = vTexCurrentOffset - vTexOffsetPerStep;
+
+			nStepIndex = nNumSteps + 1;
+			fPrevHeight = fCurrHeight;
+		}
+		else
+		{
+			nStepIndex++;
+			fPrevHeight = fCurrHeight;
+		}
+	 }
+	  
+	 float fDelta2 = pt2.x - pt2.y;  
+     float fDelta1 = pt1.x - pt1.y;  
+	 float fDenominator = fDelta2 - fDelta1;
+	 if ( fDenominator == 0.0f )
+     {
+        fParallaxAmount = 0.0f;
+     }
+     else
+     {
+        fParallaxAmount = (pt1.x * fDelta2 - pt2.x * fDelta1 ) / fDenominator;
+     }
+	 float2 vParallaxOffset = inPut.vParallaxOffsetTS * (1 - fParallaxAmount );
+	 
+	 texCoord -= vParallaxOffset;
+	 float4 cBaseColor = tex2D( diffuseMap, texCoord );
+	 float3 vNormalTS = normalize( tex2D( normalMap, texCoord ) * 2 - 1 );
+	 float4 cDiffuse = saturate( dot( vNormalTS, -vLightTS));
+	 
+	 float4 cSpecular = 0;
+
+	 float3 vReflectionTS = normalize( reflect(vLightTS,vNormalTS) );
+	 float fRdotL = saturate( dot( vReflectionTS, vViewTS ));
+
+	 cSpecular = saturate( pow( fRdotL, 10.0 ));
+	 
+	 float4 cFinalColor = cDiffuse *cBaseColor + cSpecular; 
+
+	 return cFinalColor;
+}
+
+float4 nmPS(VS_OUTPUT inPut) : COLOR0
+{
 	 float3 vViewTS   = normalize( inPut.ViewDirT);
      float3 vLightTS  = normalize( inPut.LightDirT);
 
@@ -82,16 +164,24 @@ float4 mainPS(VS_OUTPUT inPut) : COLOR0
 
 	 cSpecular = saturate( pow( fRdotL, 10.0 ));
 	 
-	 float4 cFinalColor = cDiffuse *cBaseColor*2.0 + cSpecular; 
+	 float4 cFinalColor = cDiffuse *cBaseColor + cSpecular; 
 
 	 return cFinalColor;
 }
 
-technique SBTechnique
+technique NMTechnique
 {
 	pass P0
 	{
 	  VertexShader = compile vs_2_0 mainVS();
-      PixelShader  = compile ps_2_0 mainPS();
+      PixelShader  = compile ps_2_0 nmPS();
+	}
+}
+technique PMTechnique
+{
+	pass P0
+	{
+	  VertexShader = compile vs_3_0 mainVS();
+      PixelShader  = compile ps_3_0 pmPS();
 	}
 }

@@ -84,6 +84,9 @@
     <ClInclude Include="RenderSystem\D3DRender.h" />
     <ClInclude Include="RenderSystem\Light.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="res\mesh.fx" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
