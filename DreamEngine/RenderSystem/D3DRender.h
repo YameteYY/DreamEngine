@@ -21,11 +21,12 @@ public:
 	LPDIRECT3DDEVICE9 GetDevice();
 	void SetCamera(CCamera* camera);
 	CCamera* GetCamera();
+	std::vector<Light*>* GetLightList();
 	void AddRenderObject(RenderObject* obj);
 	void AddLight(Light* light);
 private:
 	std::vector<RenderObject*> mRenderObjectList;
-	std::vector<Light*>		mLight;
+	std::vector<Light*>		mLightList;
 	CCamera*				g_camera;
 	static D3DRender* m_pInstance;
 	D3DRender();
@@ -38,7 +39,7 @@ inline void D3DRender::AddRenderObject(RenderObject* obj)
 }
 inline void D3DRender::AddLight(Light* light)
 {
-	mLight.push_back(light);
+	mLightList.push_back(light);
 }
 inline LPDIRECT3DDEVICE9 D3DRender::GetDevice()
 {
@@ -51,6 +52,10 @@ inline void D3DRender::SetCamera(CCamera* camera)
 inline CCamera* D3DRender::GetCamera()
 {
 	return g_camera;
+}
+inline std::vector<Light*>* D3DRender::GetLightList()
+{
+	return &mLightList;
 }
 
 

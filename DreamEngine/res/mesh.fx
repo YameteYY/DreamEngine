@@ -2,6 +2,9 @@ float4x4 g_mWorld;                  // World matrix for object
 float4x4 g_mWorldViewProjection;    // World * View * Projection matrix
 float4   g_LightDir;
 float4   g_EyePos;
+float4	 g_materialAmbientColor;      // Material's ambient color
+float4	 g_materialDiffuseColor;      // Material's diffuse color
+float4   g_materialSpecularColor;     // Material's specular color
 
 texture DiffuseMap;
 texture NormalMap;
@@ -12,6 +15,8 @@ sampler diffuseMap = sampler_state
     MinFilter = LINEAR; 
     MagFilter = LINEAR; 
     MipFilter = LINEAR;
+  //  ADDRESSU  = CLAMP;
+  //  ADDRESSV  = CLAMP;
 };
 
 sampler normalMap = sampler_state
@@ -20,6 +25,8 @@ sampler normalMap = sampler_state
     MinFilter = LINEAR; 
     MagFilter = LINEAR; 
     MipFilter = LINEAR;
+  //  ADDRESSU  = CLAMP;
+ //   ADDRESSV  = CLAMP;
 };
 
 struct VS_OUTPUT
@@ -30,10 +37,27 @@ struct VS_OUTPUT
 	float3 ViewDirT	  : TEXCOORD2;
 	float2 vParallaxOffsetTS : TEXCOORD3;
 };
+float4 CaculateColor(float2 texCoord,float3 vLightTS,float3 vViewTS,float fshadow)
+{
+	 float4 cBaseColor = tex2D( diffuseMap, texCoord );
+	 float3 vNormalTS = normalize( tex2D( normalMap, texCoord ) * 2 - 1 );
+	 float4 cDiffuse = saturate( dot( vNormalTS, -vLightTS)) * g_materialDiffuseColor;
+	 
+	 float4 cSpecular = 0;
+
+	 float3 vReflectionTS = normalize( reflect(vLightTS,vNormalTS) );
+	 float fRdotL = saturate( dot( vReflectionTS, vViewTS )) * g_materialSpecularColor;
+
+	 cSpecular = saturate( pow( fRdotL, 10.0 ));
+	 
+	 float4 cFinalColor = (g_materialAmbientColor + cDiffuse) *cBaseColor + cSpecular; 
+
+	 return  cFinalColor*fshadow;
+}
 VS_OUTPUT mainVS( float4 vPos : POSITION0, 
                   float3 vInNormalOS : NORMAL0,
                   float2 vTexCoord0 : TEXCOORD0,
-				  float3 vInBinormalOS : BINORMAL,
+				  				float3 vInBinormalOS : BINORMAL,
                   float3 vInTangentOS  : TANGENT
                   )
 {
@@ -58,7 +82,6 @@ VS_OUTPUT mainVS( float4 vPos : POSITION0,
 		outPut.LightDirT = mul( mWorldToTangent,vLightWS);
 		outPut.ViewDirT = mul( mWorldToTangent,vViewWS);
 
-		
 
 		float2 vParallaxDirection = normalize(  outPut.ViewDirT.xy );
 		float fLength         = length( outPut.ViewDirT );
@@ -73,9 +96,7 @@ float4 pmPS(VS_OUTPUT inPut) : COLOR0
 	 float3 vViewTS   = normalize( inPut.ViewDirT);
      float3 vLightTS  = normalize( inPut.LightDirT);
 
-	 float4 cResultColor = float4( 0, 0, 0, 1 );
 	 float2 texCoord = inPut.TextureUV;
-
 	 float fCurrHeight = 0.0;
 	 float fStepSize = 1.0 / (float)nNumSteps;
 	 float fPrevHeight = 0.0;
@@ -128,60 +149,32 @@ float4 pmPS(VS_OUTPUT inPut) : COLOR0
 	 float2 vParallaxOffset = inPut.vParallaxOffsetTS * (1 - fParallaxAmount );
 	 
 	 texCoord -= vParallaxOffset;
-	 float4 cBaseColor = tex2D( diffuseMap, texCoord );
-	 float3 vNormalTS = normalize( tex2D( normalMap, texCoord ) * 2 - 1 );
-	 float4 cDiffuse = saturate( dot( vNormalTS, -vLightTS));
 	 
-	 float4 cSpecular = 0;
-
-	 float3 vReflectionTS = normalize( reflect(vLightTS,vNormalTS) );
-	 float fRdotL = saturate( dot( vReflectionTS, vViewTS ));
-
-	 cSpecular = saturate( pow( fRdotL, 10.0 ));
-	 
-	 float4 cFinalColor = cDiffuse *cBaseColor + cSpecular; 
-
-	 return cFinalColor;
+	 return CaculateColor(texCoord,vLightTS,vViewTS,1.0);
 }
 
 float4 nmPS(VS_OUTPUT inPut) : COLOR0
 {
 	 float3 vViewTS   = normalize( inPut.ViewDirT);
      float3 vLightTS  = normalize( inPut.LightDirT);
-
-	 float4 cResultColor = float4( 0, 0, 0, 1 );
-	 float2 texCoord = inPut.TextureUV;
-
-	 float3 vNormalTS = normalize( tex2D( normalMap, texCoord ) * 2 - 1 );
-	 float4 cBaseColor = tex2D( diffuseMap, texCoord );
-
-	 float4 cDiffuse = saturate( dot( vNormalTS, -vLightTS));
+	 float2 texCoord  = inPut.TextureUV;
 	 
-	 float4 cSpecular = 0;
-
-	 float3 vReflectionTS = normalize( reflect(vLightTS,vNormalTS) );
-	 float fRdotL = saturate( dot( vReflectionTS, vViewTS ));
-
-	 cSpecular = saturate( pow( fRdotL, 10.0 ));
-	 
-	 float4 cFinalColor = cDiffuse *cBaseColor + cSpecular; 
-
-	 return cFinalColor;
+	 return CaculateColor(texCoord,vLightTS,vViewTS,1.0);
 }
 
 technique NMTechnique
 {
 	pass P0
 	{
-	  VertexShader = compile vs_2_0 mainVS();
-      PixelShader  = compile ps_2_0 nmPS();
+	    VertexShader = compile vs_2_0 mainVS();
+        PixelShader  = compile ps_2_0 nmPS();
 	}
 }
 technique PMTechnique
 {
 	pass P0
 	{
-	  VertexShader = compile vs_3_0 mainVS();
-      PixelShader  = compile ps_3_0 pmPS();
+	    VertexShader = compile vs_3_0 mainVS();
+        PixelShader  = compile ps_3_0 pmPS();
 	}
 }

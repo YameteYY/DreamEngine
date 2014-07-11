@@ -10,7 +10,7 @@ bool GameServer::Init(HWND hWnd)
 
 	// Setup the camera's view parameters
 	D3DXVECTOR3 vecUp ( 0.0f, 0.0f, 1.0f );
-	D3DXVECTOR3 vecEye( 0.0f, 15.0f, 0.0f );
+	D3DXVECTOR3 vecEye( 5.0f, 5.0f, 5.0f );
 	D3DXVECTOR3 vecAt ( 0.0f, 0.0f, 0.0f );
 	g_camera.SetViewParams(vecEye,vecAt,vecUp);
 	mD3DRender->SetCamera(&g_camera);
@@ -22,10 +22,19 @@ bool GameServer::Init(HWND hWnd)
 	mMesh->Init("Media/Disc.x");
 
 	D3DXMATRIX word,scale,rotation;
-	D3DXMatrixScaling(&scale,0.1,0.1,0.1);
+	D3DXMatrixScaling(&scale,0.05,0.05,0.05);
 	D3DXMatrixRotationZ(&rotation,90);
 	D3DXMatrixMultiply(&word,&rotation,&scale);
 	mMesh->SetWordTransform(word);
+	mD3DRender->AddRenderObject(mMesh);
+
+
+	mMesh = new MeshRenderObject();
+	mMesh->SetEffectFromFile("res/mesh.fx");
+	mMesh->Init("Media/room.x");
+
+	D3DXMatrixScaling(&scale,5,5,5);
+	mMesh->SetWordTransform(scale);
 
 	mD3DRender->AddRenderObject(mMesh);
 

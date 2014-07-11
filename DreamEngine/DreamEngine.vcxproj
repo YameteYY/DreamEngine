@@ -73,6 +73,7 @@
     <ClCompile Include="RenderSystem\Camera.cpp" />
     <ClCompile Include="RenderSystem\D3DRender.cpp" />
     <ClCompile Include="RenderSystem\Light.cpp" />
+    <ClCompile Include="RenderSystem\SpotLight.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +84,7 @@
     <ClInclude Include="RenderSystem\D3DHeader.h" />
     <ClInclude Include="RenderSystem\D3DRender.h" />
     <ClInclude Include="RenderSystem\Light.h" />
+    <ClInclude Include="RenderSystem\SpotLight.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\mesh.fx" />

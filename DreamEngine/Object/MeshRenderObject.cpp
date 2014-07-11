@@ -20,13 +20,14 @@ bool MeshRenderObject::Init(const char* meshName)
 	//
 	LPDIRECT3DDEVICE9 Device = D3DRender::Instance()->GetDevice();
 	ID3DXBuffer* mtrlBuffer = 0;
+	ID3DXBuffer* adjBuffer = 0;
 	mNumMesh   = 0;
 
 	hr = D3DXLoadMeshFromX(  
 		meshName,
 		D3DXMESH_MANAGED,
 		Device,
-		0,
+		&adjBuffer,
 		&mtrlBuffer,
 		0,
 		&mNumMesh,
@@ -73,7 +74,6 @@ bool MeshRenderObject::Init(const char* meshName)
 		Device,
 		"Media/four_NM_height.tga",
 		&mNormalMap);
-
 	// Create a new vertex declaration to hold all the required data
 	const D3DVERTEXELEMENT9 vertexDecl[] =
 	{
@@ -86,7 +86,7 @@ bool MeshRenderObject::Init(const char* meshName)
 	};
 
 	LPD3DXMESH pTempMesh = NULL;
-
+	
 	// Clone mesh to match the specified declaration: 
 	if( FAILED( mMesh->CloneMesh( mMesh->GetOptions(), vertexDecl, Device, &pTempMesh ) ) )
 	{
@@ -177,6 +177,13 @@ bool MeshRenderObject::Init(const char* meshName)
 
 	SAFE_DELETE_ARRAY( rgdwAdjacency );
 
+	//Optimize the mesh 
+	mMesh->Optimize(D3DXMESH_MANAGED | 
+		D3DXMESHOPT_COMPACT | D3DXMESHOPT_ATTRSORT | D3DXMESHOPT_VERTEXCACHE, 
+		(DWORD*)adjBuffer->GetBufferPointer(), 0, 0, 0, &mMesh); 
+
+	SAFE_RELEASE(adjBuffer); // Done with buffer.
+
 	return true;
 }
 void MeshRenderObject::Render()
@@ -205,11 +212,23 @@ void MeshRenderObject::Render()
 	mEffect->SetVector("g_LightDir",&D3DXVECTOR4(1,-1,0,0));
 	const D3DXVECTOR3& eyePos = camera->GetEyePos();
 	mEffect->SetVector("g_EyePos",&D3DXVECTOR4(eyePos.x,eyePos.y,eyePos.z,1.0f) );
-	for (int i=0;i<mNumMesh;i++)
+
+	for(int j=0;j<numPasses;j++)
 	{
-		mEffect->BeginPass(i);
-		mEffect->SetTexture("DiffuseMap",mDiffuseMap[i]);
-		mMesh->DrawSubset(i);
+		mEffect->BeginPass(j);
+		//for (int i=0;i<mNumMesh;i++)
+		{
+			int i = 0;
+			mEffect->SetTexture("DiffuseMap",mDiffuseMap[i]);
+			mEffect->SetVector("g_materialAmbientColor",&D3DXVECTOR4(mMaterial[i].Ambient.r,mMaterial[i].Ambient.g,
+				mMaterial[i].Ambient.b,mMaterial[i].Ambient.a) );
+			mEffect->SetVector("g_materialDiffuseColor",&D3DXVECTOR4(mMaterial[i].Diffuse.r,mMaterial[i].Diffuse.g,
+				mMaterial[i].Diffuse.b,mMaterial[i].Diffuse.a));
+			mEffect->SetVector("g_materialSpecularColor",&D3DXVECTOR4(mMaterial[i].Specular.r,mMaterial[i].Specular.g,
+				mMaterial[i].Specular.b,mMaterial[i].Specular.a));
+			mEffect->CommitChanges();
+			mMesh->DrawSubset(i);
+		}
 		mEffect->EndPass();
 	}
 	mEffect->End();

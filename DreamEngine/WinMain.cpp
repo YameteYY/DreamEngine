@@ -58,7 +58,7 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,
 	RegisterClass(&wc);
 	hWnd = CreateWindow( "create window", "test", WS_OVERLAPPEDWINDOW,
 		50, 50, 800, 600, 0,
-		NULL, hInstance, 0 );                   
+		NULL, hInstance, 0 );
 
    if(!hWnd)  
    {
