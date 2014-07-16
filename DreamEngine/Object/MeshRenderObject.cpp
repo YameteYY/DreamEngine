@@ -2,7 +2,7 @@
 #include "../RenderSystem/D3DRender.h"
 #include "../RenderSystem/Camera.h"
 
-MeshRenderObject::MeshRenderObject()
+MeshRenderObject::MeshRenderObject():mMeshTable(NULL),mVertexBuffer(NULL),mIndexBuffer(NULL)
 {
 	mMaterial.clear();
 	mDiffuseMap.clear();
@@ -29,7 +29,7 @@ bool MeshRenderObject::Init(const char* meshName)
 		Device,
 		&adjBuffer,
 		&mtrlBuffer,
-		0,
+		NULL,
 		&mNumMesh,
 		&mMesh);
 
@@ -38,6 +38,8 @@ bool MeshRenderObject::Init(const char* meshName)
 		::MessageBox(0, "D3DXLoadMeshFromX() - FAILED", 0, 0);
 		return false;
 	}
+
+	
 
 	if( mtrlBuffer != 0 && mNumMesh != 0 )
 	{
@@ -161,20 +163,19 @@ bool MeshRenderObject::Init(const char* meshName)
 	if( !bHadTangent || !bHadBinormal )
 	{
 		ID3DXMesh* pNewMesh;
-
+		
 		// Compute tangents, which are required for normal mapping
 		if( FAILED( D3DXComputeTangentFrameEx( mMesh, D3DDECLUSAGE_TEXCOORD, 0, D3DDECLUSAGE_TANGENT, 0,
 			D3DDECLUSAGE_BINORMAL, 0,
-			D3DDECLUSAGE_NORMAL, 0, 0, rgdwAdjacency, -1.01f,
+			D3DDECLUSAGE_NORMAL, 0, D3DXTANGENT_GENERATE_IN_PLACE, rgdwAdjacency, -1.01f,
 			-0.01f, -1.01f, &pNewMesh, NULL ) ) )
 		{
 			return E_FAIL;
 		}
 
-		SAFE_RELEASE( mMesh );
-		mMesh = pNewMesh;
+		//SAFE_RELEASE( mMesh );
+		//mMesh = pNewMesh;
 	}
-
 	SAFE_DELETE_ARRAY( rgdwAdjacency );
 
 	//Optimize the mesh 
@@ -184,7 +185,16 @@ bool MeshRenderObject::Init(const char* meshName)
 
 	SAFE_RELEASE(adjBuffer); // Done with buffer.
 
-	return true;
+	
+	mMeshTable = new D3DXATTRIBUTERANGE[mNumMesh];
+	mMesh->GetAttributeTable(mMeshTable,NULL);
+	mMesh->GetVertexBuffer(&mVertexBuffer);
+	mMesh->GetIndexBuffer(&mIndexBuffer);
+	Device->CreateVertexDeclaration(vertexDecl,&mVertexDecl);
+	
+	mVertexSize = sizeof(CUSTOMVERTEX);
+
+	return S_OK;
 }
 void MeshRenderObject::Render()
 {
@@ -197,7 +207,7 @@ void MeshRenderObject::Render()
 		mTechHandle = mEffect->GetTechniqueByName("PMTechnique");
 	}
 	CCamera* camera = D3DRender::Instance()->GetCamera();
-	
+	LPDIRECT3DDEVICE9 Device = D3DRender::Instance()->GetDevice();
 	mEffect->SetMatrix("g_mWorld",&mWord);
 	const D3DXMATRIX *mProj = camera->GetProjTrans();
 	const D3DXMATRIX *mView = camera->GetViewTrans();
@@ -207,18 +217,21 @@ void MeshRenderObject::Render()
 
 	mEffect->SetTechnique(mTechHandle);
 	UINT numPasses = 0;
-	mEffect->Begin(&numPasses,0);
 	mEffect->SetTexture("NormalMap",mNormalMap);
 	mEffect->SetVector("g_LightDir",&D3DXVECTOR4(1,-1,0,0));
 	const D3DXVECTOR3& eyePos = camera->GetEyePos();
 	mEffect->SetVector("g_EyePos",&D3DXVECTOR4(eyePos.x,eyePos.y,eyePos.z,1.0f) );
 
+	Device->SetVertexDeclaration(mVertexDecl);
+	Device->SetStreamSource(0,mVertexBuffer,0,mVertexSize);
+	Device->SetIndices(mIndexBuffer);
+
+	mEffect->Begin(&numPasses,0);
 	for(int j=0;j<numPasses;j++)
 	{
 		mEffect->BeginPass(j);
-		//for (int i=0;i<mNumMesh;i++)
+		for (int i=0;i<mNumMesh;i++)
 		{
-			int i = 0;
 			mEffect->SetTexture("DiffuseMap",mDiffuseMap[i]);
 			mEffect->SetVector("g_materialAmbientColor",&D3DXVECTOR4(mMaterial[i].Ambient.r,mMaterial[i].Ambient.g,
 				mMaterial[i].Ambient.b,mMaterial[i].Ambient.a) );
@@ -227,7 +240,10 @@ void MeshRenderObject::Render()
 			mEffect->SetVector("g_materialSpecularColor",&D3DXVECTOR4(mMaterial[i].Specular.r,mMaterial[i].Specular.g,
 				mMaterial[i].Specular.b,mMaterial[i].Specular.a));
 			mEffect->CommitChanges();
-			mMesh->DrawSubset(i);
+
+			Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,
+				mMeshTable[i].VertexStart,mMeshTable[i].VertexCount,
+				mMeshTable[i].FaceStart*3,mMeshTable[i].FaceCount);
 		}
 		mEffect->EndPass();
 	}
