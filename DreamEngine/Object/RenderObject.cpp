@@ -4,7 +4,7 @@
 RenderObject::RenderObject()
 {
 	mEffect = NULL;
-	mTechHandle = NULL;
+	mSurfaceTechHandle = NULL;
 	D3DXMatrixIdentity(&mWord);
 }
 RenderObject::~RenderObject()
@@ -38,8 +38,8 @@ bool RenderObject::SetEffectFromFile(const char* shaderFile)
 		return false;
 	}
 
-	mTechHandle = mEffect->GetTechniqueByName("NMTechnique");
-
+	mSurfaceTechHandle = mEffect->GetTechniqueByName("NMTechnique");
+	mShadowTechHandle = mEffect->GetTechniqueByName("ShadowTechnique");
 	/*
 	const D3DVERTEXELEMENT9 decl[] = 
 	{

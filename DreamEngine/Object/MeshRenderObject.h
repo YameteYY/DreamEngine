@@ -16,17 +16,33 @@ public:
 	MeshRenderObject();
 	~MeshRenderObject();
 	bool Init(const char* meshName);
-	virtual void Render();
+	virtual void Render(RenderType renderType);
+	void SetNormalMapRender();
+	void SetParallaxMapRender();
+	std::vector<NormapMaterial>& GetMaterial();
 private:
+	DWORD mNumMesh;
 	ID3DXMesh* mMesh;
-	std::vector<D3DMATERIAL9> mMaterial;
-	std::vector<IDirect3DTexture9*> mDiffuseMap;
-	IDirect3DTexture9* mNormalMap;
+	std::vector<NormapMaterial> mMaterial;
+
 	D3DXATTRIBUTERANGE* mMeshTable;
 	IDirect3DVertexBuffer9* mVertexBuffer;
 	IDirect3DIndexBuffer9*  mIndexBuffer;
 	IDirect3DVertexDeclaration9* mVertexDecl;
 	int mVertexSize;
 };
+inline std::vector<NormapMaterial>& MeshRenderObject::GetMaterial()
+{
+	return mMaterial;
+}
+inline void MeshRenderObject::SetNormalMapRender()
+{
+	mSurfaceTechHandle = mEffect->GetTechniqueByName("NMTechnique");
+}
+inline void MeshRenderObject::SetParallaxMapRender()
+{
+	mSurfaceTechHandle = mEffect->GetTechniqueByName("PMTechnique");
+}
+
 
 #endif

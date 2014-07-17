@@ -2,6 +2,8 @@
 #include "RenderSystem/D3DRender.h"
 #include "Object/MeshRenderObject.h"
 #include "RenderSystem/Light.h"
+#include "RenderSystem/Material.h"
+#include "RenderSystem/TextureMgr.h"
 
 bool GameServer::Init(HWND hWnd)
 {
@@ -20,6 +22,13 @@ bool GameServer::Init(HWND hWnd)
 	mMesh = new MeshRenderObject();
 	mMesh->SetEffectFromFile("res/mesh.fx");
 	mMesh->Init("Media/Disc.x");
+	mMesh->SetParallaxMapRender();
+
+	std::vector<NormapMaterial>& mat = mMesh->GetMaterial();
+	for(int i=0;i<mat.size();i++)
+	{
+		mat[i].NormalMap = TextureMgr::Instance()->GetTexture("Media/four_NM_height.tga");
+	}
 
 	D3DXMATRIX word,scale,rotation;
 	D3DXMatrixScaling(&scale,0.05,0.05,0.05);
@@ -28,10 +37,17 @@ bool GameServer::Init(HWND hWnd)
 	mMesh->SetWordTransform(word);
 	mD3DRender->AddRenderObject(mMesh);
 
-
+	
 	mMesh = new MeshRenderObject();
 	mMesh->SetEffectFromFile("res/mesh.fx");
 	mMesh->Init("Media/room.x");
+	mMesh->SetNormalMapRender();
+	std::vector<NormapMaterial>& mat1 = mMesh->GetMaterial();
+	for(int i=0;i<mat1.size();i++)
+	{
+		mat1[i].NormalMap = TextureMgr::Instance()->GetTexture("Media/stones_NM_height.tga");
+		mat1[i].Specular = 100;
+	}
 
 	D3DXMatrixScaling(&scale,5,5,5);
 	mMesh->SetWordTransform(scale);
@@ -40,7 +56,7 @@ bool GameServer::Init(HWND hWnd)
 
 
 	Light* light = new Light();
-	light->SetDirection(D3DXVECTOR4(1.0f,-1.0,1.0f,0.0f));
+	mD3DRender->AddLight(light);
 	return true;
 }
 void GameServer::Close()
@@ -50,5 +66,7 @@ void GameServer::Close()
 void GameServer::Run()
 {
 	g_camera.Update();
+	std::vector<Light*>* lightList = mD3DRender->GetLightList();
+	(*lightList)[0]->Update();
 	mD3DRender->Render();
 }

@@ -1,11 +1,11 @@
 #include "MeshRenderObject.h"
 #include "../RenderSystem/D3DRender.h"
 #include "../RenderSystem/Camera.h"
+#include "../RenderSystem/TextureMgr.h"
 
 MeshRenderObject::MeshRenderObject():mMeshTable(NULL),mVertexBuffer(NULL),mIndexBuffer(NULL)
 {
 	mMaterial.clear();
-	mDiffuseMap.clear();
 }
 MeshRenderObject::~MeshRenderObject()
 {
@@ -39,43 +39,40 @@ bool MeshRenderObject::Init(const char* meshName)
 		return false;
 	}
 
-	
-
 	if( mtrlBuffer != 0 && mNumMesh != 0 )
 	{
 		D3DXMATERIAL* mtrls = (D3DXMATERIAL*)mtrlBuffer->GetBufferPointer();
 		for(int i = 0; i < mNumMesh; i++)
 		{
-			mtrls[i].MatD3D = mtrls[i].MatD3D;
-			mMaterial.push_back( mtrls[i].MatD3D );
+			NormapMaterial mat;
+			mat.AmbientColor = D3DXVECTOR4(mtrls[i].MatD3D.Ambient.r,mtrls[i].MatD3D.Ambient.g,
+				mtrls[i].MatD3D.Ambient.b,mtrls[i].MatD3D.Ambient.a);
+
+			mat.DiffuseColor = D3DXVECTOR4(mtrls[i].MatD3D.Diffuse.r,mtrls[i].MatD3D.Diffuse.g,
+				mtrls[i].MatD3D.Diffuse.b,mtrls[i].MatD3D.Diffuse.a);
+
+			mat.SpecularColor = D3DXVECTOR4(mtrls[i].MatD3D.Specular.r,mtrls[i].MatD3D.Specular.g,
+				mtrls[i].MatD3D.Specular.b,mtrls[i].MatD3D.Specular.a);
+
 			if( mtrls[i].pTextureFilename != 0 )
 			{
 				char str[64];
 				sprintf(str,"Media/%s",mtrls[i].pTextureFilename);
-				IDirect3DTexture9* tex = 0;
-				D3DXCreateTextureFromFile(
-					Device,
-					str,
-					&tex);
-				mDiffuseMap.push_back( tex );
+				mat.DiffuseMap = TextureMgr::Instance()->GetTexture(str);
 			}
 			else
 			{
-				IDirect3DTexture9* tex = 0;
-				D3DXCreateTextureFromFile(
-					Device,
-					"Media/wood.jpg",
-					&tex);
-				mDiffuseMap.push_back( tex );
+				mat.DiffuseMap = TextureMgr::Instance()->GetTexture("Media/wood.jpg");
 			}
+
+			mat.NormalMap = TextureMgr::Instance()->GetTexture("Media/Normal.dds");
+
+			mMaterial.push_back( mat );
 		}
 	}
 	SAFE_RELEASE(mtrlBuffer);
 
-	D3DXCreateTextureFromFile(
-		Device,
-		"Media/four_NM_height.tga",
-		&mNormalMap);
+
 	// Create a new vertex declaration to hold all the required data
 	const D3DVERTEXELEMENT9 vertexDecl[] =
 	{
@@ -196,31 +193,24 @@ bool MeshRenderObject::Init(const char* meshName)
 
 	return S_OK;
 }
-void MeshRenderObject::Render()
+void MeshRenderObject::Render(RenderType renderType)
 {
-	if( GetKeyState('N') & 0x8000 )
-	{
-		mTechHandle = mEffect->GetTechniqueByName("NMTechnique");
-	}
-	else if( GetKeyState('P') & 0x8000 )
-	{
-		mTechHandle = mEffect->GetTechniqueByName("PMTechnique");
-	}
-	CCamera* camera = D3DRender::Instance()->GetCamera();
+	std::vector<Light*>* light = D3DRender::Instance()->GetLightList();
 	LPDIRECT3DDEVICE9 Device = D3DRender::Instance()->GetDevice();
-	mEffect->SetMatrix("g_mWorld",&mWord);
-	const D3DXMATRIX *mProj = camera->GetProjTrans();
-	const D3DXMATRIX *mView = camera->GetViewTrans();
-	D3DXMATRIX vp;
-	D3DXMatrixMultiply(&vp,mView,mProj);
-	mEffect->SetMatrix("g_mWorldViewProjection",&vp);
-
-	mEffect->SetTechnique(mTechHandle);
+	if(renderType == Surface)
+	{
+		if(mSurfaceTechHandle == NULL)
+			return;
+		mEffect->SetTechnique(mSurfaceTechHandle);
+	}
+	else if(renderType == Shadow)
+	{
+		if(mShadowTechHandle == NULL)
+			return;
+		mEffect->SetTechnique(mShadowTechHandle);
+	}
 	UINT numPasses = 0;
-	mEffect->SetTexture("NormalMap",mNormalMap);
-	mEffect->SetVector("g_LightDir",&D3DXVECTOR4(1,-1,0,0));
-	const D3DXVECTOR3& eyePos = camera->GetEyePos();
-	mEffect->SetVector("g_EyePos",&D3DXVECTOR4(eyePos.x,eyePos.y,eyePos.z,1.0f) );
+	mEffect->SetMatrix("g_mWorld",&mWord);
 
 	Device->SetVertexDeclaration(mVertexDecl);
 	Device->SetStreamSource(0,mVertexBuffer,0,mVertexSize);
@@ -232,15 +222,9 @@ void MeshRenderObject::Render()
 		mEffect->BeginPass(j);
 		for (int i=0;i<mNumMesh;i++)
 		{
-			mEffect->SetTexture("DiffuseMap",mDiffuseMap[i]);
-			mEffect->SetVector("g_materialAmbientColor",&D3DXVECTOR4(mMaterial[i].Ambient.r,mMaterial[i].Ambient.g,
-				mMaterial[i].Ambient.b,mMaterial[i].Ambient.a) );
-			mEffect->SetVector("g_materialDiffuseColor",&D3DXVECTOR4(mMaterial[i].Diffuse.r,mMaterial[i].Diffuse.g,
-				mMaterial[i].Diffuse.b,mMaterial[i].Diffuse.a));
-			mEffect->SetVector("g_materialSpecularColor",&D3DXVECTOR4(mMaterial[i].Specular.r,mMaterial[i].Specular.g,
-				mMaterial[i].Specular.b,mMaterial[i].Specular.a));
-			mEffect->CommitChanges();
+			mMaterial[i].SetParam(mEffect);
 
+			mEffect->CommitChanges();
 			Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,
 				mMeshTable[i].VertexStart,mMeshTable[i].VertexCount,
 				mMeshTable[i].FaceStart*3,mMeshTable[i].FaceCount);

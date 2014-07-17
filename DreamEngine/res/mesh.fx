@@ -1,13 +1,22 @@
+#define SMAP_SIZE 512
+#define SHADOW_EPSILON 0.00005f
+
 float4x4 g_mWorld;                  // World matrix for object
-float4x4 g_mWorldViewProjection;    // World * View * Projection matrix
+float4x4 g_mViewProjection;    //  View * Projection matrix
+float4x4 g_mLightVP;			// View * Projection matrix
 float4   g_LightDir;
 float4   g_EyePos;
+float4   g_vLightPos;
 float4	 g_materialAmbientColor;      // Material's ambient color
 float4	 g_materialDiffuseColor;      // Material's diffuse color
 float4   g_materialSpecularColor;     // Material's specular color
+float    g_specular;				  // 高光参数
+float    g_heightScale;
+float    g_fCosTheta;  // Cosine of theta of the spot light
 
 texture DiffuseMap;
 texture NormalMap;
+texture ShadowMap;
 
 sampler diffuseMap = sampler_state
 {
@@ -17,6 +26,16 @@ sampler diffuseMap = sampler_state
     MipFilter = LINEAR;
   //  ADDRESSU  = CLAMP;
   //  ADDRESSV  = CLAMP;
+};
+
+sampler shadowMap = sampler_state
+{
+    Texture   = (ShadowMap);
+    MinFilter = Point; 
+    MagFilter = Point; 
+    MipFilter = Point;
+	ADDRESSU  = CLAMP;
+    ADDRESSV  = CLAMP;
 };
 
 sampler normalMap = sampler_state
@@ -36,6 +55,8 @@ struct VS_OUTPUT
 	float3 LightDirT  : TEXCOORD1;
 	float3 ViewDirT	  : TEXCOORD2;
 	float2 vParallaxOffsetTS : TEXCOORD3;
+	float4 vPosLight  : TEXCOORD4;
+	float4 vPosition  : TEXCOORD5;
 };
 float4 CaculateColor(float2 texCoord,float3 vLightTS,float3 vViewTS,float fshadow)
 {
@@ -48,22 +69,23 @@ float4 CaculateColor(float2 texCoord,float3 vLightTS,float3 vViewTS,float fshado
 	 float3 vReflectionTS = normalize( reflect(vLightTS,vNormalTS) );
 	 float fRdotL = saturate( dot( vReflectionTS, vViewTS )) * g_materialSpecularColor;
 
-	 cSpecular = saturate( pow( fRdotL, 10.0 ));
+	 cSpecular = saturate( pow( fRdotL, g_specular ));
 	 
 	 float4 cFinalColor = (g_materialAmbientColor + cDiffuse) *cBaseColor + cSpecular; 
 
-	 return  cFinalColor*fshadow;
+	 return  cFinalColor*( fshadow + 0.4);
 }
 VS_OUTPUT mainVS( float4 vPos : POSITION0, 
                   float3 vInNormalOS : NORMAL0,
                   float2 vTexCoord0 : TEXCOORD0,
-				  				float3 vInBinormalOS : BINORMAL,
+				  float3 vInBinormalOS : BINORMAL,
                   float3 vInTangentOS  : TANGENT
                   )
 {
 		VS_OUTPUT outPut;
-		float4 vPosition = mul(vPos,g_mWorld);
-		outPut.Position = mul(vPosition,g_mWorldViewProjection);
+		outPut.vPosition = mul(vPos,g_mWorld);
+		outPut.vPosLight = mul(outPut.vPosition,g_mLightVP);
+		outPut.Position = mul(outPut.vPosition,g_mViewProjection);
 
 		outPut.TextureUV = vTexCoord0;
 		float3 vNormalWS   = mul( vInNormalOS,   (float3x3) g_mWorld );
@@ -74,7 +96,7 @@ VS_OUTPUT mainVS( float4 vPos : POSITION0,
 		vTangentWS  = normalize( vTangentWS );
 		vBinormalWS = normalize( vBinormalWS );
 
-		float3 vViewWS = g_EyePos - vPosition;
+		float3 vViewWS = g_EyePos - outPut.vPosition;
 
 		float3 vLightWS = g_LightDir;
 
@@ -88,6 +110,9 @@ VS_OUTPUT mainVS( float4 vPos : POSITION0,
 		float fParallaxLength = sqrt( fLength * fLength - outPut.ViewDirT.z * outPut.ViewDirT.z ) / outPut.ViewDirT.z; 
 		outPut.vParallaxOffsetTS = vParallaxDirection * fParallaxLength;
 		outPut.vParallaxOffsetTS *= 0.1;
+
+
+		
 		return outPut;
 }
 float4 pmPS(VS_OUTPUT inPut) : COLOR0
@@ -159,15 +184,64 @@ float4 nmPS(VS_OUTPUT inPut) : COLOR0
      float3 vLightTS  = normalize( inPut.LightDirT);
 	 float2 texCoord  = inPut.TextureUV;
 	 
-	 return CaculateColor(texCoord,vLightTS,vViewTS,1.0);
+	 float3 vLight = normalize( inPut.vPosition.xyz - g_vLightPos.xyz );
+	 float LightAmount = 0;
+	 if( dot( vLight, g_LightDir ) > g_fCosTheta )
+	 {
+		 float depth = inPut.vPosLight.z/inPut.vPosLight.w;
+
+		 float2 ShadowTexC = 0.5 * inPut.vPosLight.xy / inPut.vPosLight.w + float2( 0.5, 0.5 );
+		 ShadowTexC.y = 1.0f - ShadowTexC.y;
+
+		 // transform to texel space
+		 float2 texelpos = SMAP_SIZE * ShadowTexC;
+        
+		 // Determine the lerp amounts           
+		 float2 lerps = frac( texelpos );
+
+		 float sourcevals[4];
+		 sourcevals[0] = tex2D(shadowMap,ShadowTexC) + SHADOW_EPSILON < depth?0.0f:1.0f;
+		 sourcevals[1] = tex2D(shadowMap,ShadowTexC + float2(1.0/SMAP_SIZE,0) ) + SHADOW_EPSILON < depth?0.0f:1.0f;
+		 sourcevals[2] = tex2D(shadowMap,ShadowTexC + float2(0,1.0/SMAP_SIZE) ) + SHADOW_EPSILON < depth?0.0f:1.0f;
+		 sourcevals[3] = tex2D(shadowMap,ShadowTexC + float2(1.0/SMAP_SIZE,1.0/SMAP_SIZE) ) + SHADOW_EPSILON < depth?0.0f:1.0f;
+
+		 LightAmount  = lerp( lerp( sourcevals[0], sourcevals[1], lerps.x ),
+									  lerp( sourcevals[2], sourcevals[3], lerps.x ),
+									  lerps.y );
+    }
+	 return CaculateColor(texCoord,vLightTS,vViewTS,LightAmount);
 }
 
+void shadowVS(float4 vPos : POSITION0,
+			  out float4 oPos:POSITION,
+			  out float2 Depth:TEXCOORD0)
+{
+	float4 vPosition = mul(vPos,g_mWorld);
+	oPos = mul(vPosition,g_mLightVP);
+
+	Depth.xy = oPos.zw;
+}
+float4 shadowPS(float2 Depth:TEXCOORD0) : COLOR0
+{
+	float4 color;
+	color.rgb = float3(1,1,1);
+	return color.a = Depth.x/Depth.y;
+}
+
+technique ShadowTechnique
+{
+	pass P0
+	{
+	    VertexShader = compile vs_2_0 shadowVS();
+        PixelShader  = compile ps_2_0 shadowPS();
+	}
+}
 technique NMTechnique
 {
 	pass P0
 	{
-	    VertexShader = compile vs_2_0 mainVS();
-        PixelShader  = compile ps_2_0 nmPS();
+	    VertexShader = compile vs_3_0 mainVS();
+        PixelShader  = compile ps_3_0 nmPS();
 	}
 }
 technique PMTechnique

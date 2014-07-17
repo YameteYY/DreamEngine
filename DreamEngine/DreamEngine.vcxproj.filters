@@ -41,6 +41,9 @@
     <ClCompile Include="RenderSystem\SpotLight.cpp">
       <Filter>RenderSystem</Filter>
     </ClCompile>
+    <ClCompile Include="RenderSystem\TextureMgr.cpp">
+      <Filter>RenderSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameServer.h">
@@ -65,6 +68,12 @@
       <Filter>RenderSystem</Filter>
     </ClInclude>
     <ClInclude Include="RenderSystem\SpotLight.h">
+      <Filter>RenderSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem\Material.h">
+      <Filter>RenderSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem\TextureMgr.h">
       <Filter>RenderSystem</Filter>
     </ClInclude>
   </ItemGroup>

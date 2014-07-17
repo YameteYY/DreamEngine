@@ -16,7 +16,7 @@ public:
 private:
 	MeshRenderObject* mMesh;
 	D3DRender* mD3DRender;
-    CRPGCamera g_camera;
+    CFirstPersonCamera g_camera;
 };
 
 

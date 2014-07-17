@@ -201,6 +201,8 @@ void CCamera::ApplyDevice( LPDIRECT3DDEVICE9  pDevice )
 
 CFirstPersonCamera::CFirstPersonCamera(void)
 {
+	m_LastPoint.x = 0;
+	m_LastPoint.y = 0;
 }
 
 CFirstPersonCamera::~CFirstPersonCamera(void)
@@ -209,6 +211,10 @@ CFirstPersonCamera::~CFirstPersonCamera(void)
 
 void CFirstPersonCamera::Update(void)
 {
+	if((GetKeyState('L') & 0x8000) )
+		return;
+	ProcessKey(20);
+
 	POINT ptCurrentPos = {0, 0};
 	POINT ptDeltaPos = {0, 0};
 
@@ -230,6 +236,68 @@ void CFirstPersonCamera::Update(void)
 		m_fCameraPitchAngle = -D3DX_PI*0.5f;
 	else if(m_fCameraPitchAngle > D3DX_PI*0.5f)
 		m_fCameraPitchAngle = D3DX_PI*0.5f;
+
+	D3DXMATRIX matCameraRot;
+	//ZeroMemory(&matCameraRot, sizeof(D3DXMATRIX));
+	D3DXMatrixRotationYawPitchRoll(&matCameraRot, m_fCameraYawAngle, m_fCameraPitchAngle,0.f);
+
+	// 根据旋转矩阵将摄像机的局部方向向量和上方向向量转为全局向量
+	D3DXVECTOR3 vWorldUp, vWorldAhead;
+	D3DXVECTOR3 vLocalUp    = D3DXVECTOR3(0,1,0);
+	D3DXVECTOR3 vLocalAhead = D3DXVECTOR3(0,0,1);
+	D3DXVec3TransformCoord( &vWorldUp, &vLocalUp, &matCameraRot );
+	D3DXVec3TransformCoord( &vWorldAhead, &vLocalAhead, &matCameraRot );
+
+	// first trans, than look at , equal to move to final eye coordinate
+	if(m_bIsTrans)
+	{
+		// 将局部偏移量转到全局坐标
+		D3DXVECTOR3 vWorldDelta;
+		D3DXVec3TransformCoord( &vWorldDelta, &m_vDelta, &matCameraRot );
+		// 根据偏移量计算视点位置
+		m_EyePos += vWorldDelta;
+	}
+	// 计算观察点位置
+	m_LookAt = m_EyePos + vWorldAhead;
+
+	// 更新视矩阵
+	D3DXMatrixLookAtLH( &m_ViewTrans, &m_EyePos, &m_LookAt, &vWorldUp );
+
+	m_Direction = m_LookAt - m_EyePos;
+	m_Up = vWorldUp;
+	D3DXVec3Cross( &m_Right, &vWorldUp, &m_Direction );
+}
+
+CLightCamera::CLightCamera(void)
+{
+	m_LastPoint.x = 0;
+	m_LastPoint.y = 0;
+}
+
+CLightCamera::~CLightCamera(void)
+{
+}
+
+void CLightCamera::Update(void)
+{
+	if( ! (GetKeyState('L') & 0x8000) )
+		return;
+	ProcessKey(20);
+	POINT ptCurrentPos = {0, 0};
+	POINT ptDeltaPos = {0, 0};
+
+	// 计算鼠标偏移
+	GetCursorPos(&ptCurrentPos);
+	ptDeltaPos.x = ptCurrentPos.x - m_LastPoint.x;
+	ptDeltaPos.y = ptCurrentPos.y - m_LastPoint.y;
+	m_LastPoint = ptCurrentPos;
+
+	float fYaw = ptDeltaPos.x*0.01f;
+	float fPitch = ptDeltaPos.y*0.01f;
+
+	// 根据鼠标偏移计算欧拉角
+	m_fCameraYawAngle   += fYaw;
+	m_fCameraPitchAngle += fPitch;
 
 	D3DXMATRIX matCameraRot;
 	//ZeroMemory(&matCameraRot, sizeof(D3DXMATRIX));
@@ -349,7 +417,7 @@ void  CRPGCamera::SetCenter(const D3DXVECTOR3 &vCenter)
 
 LRESULT CRPGCamera::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ProcessKey(5);
+	ProcessKey(10);
 	switch( msg )
 	{
 	case WM_MOUSEWHEEL: //鼠标滚轮

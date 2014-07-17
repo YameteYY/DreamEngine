@@ -20,6 +20,7 @@ public:
 	const D3DXMATRIX *GetProjTrans() const;
 
 	const D3DXVECTOR3& GetEyePos() const;
+	const D3DXVECTOR3& GetEyeDir() const;
 
 	//设置摄像机移动速度
 	void SetMoveVelocity( float fVelocity );
@@ -88,6 +89,10 @@ inline const D3DXVECTOR3& CCamera::GetEyePos() const
 {
 	return m_EyePos;
 }
+inline const D3DXVECTOR3& CCamera::GetEyeDir() const
+{
+	return m_Direction;
+}
 
 // 第一人称摄像机类，提供第一人称方式的摄像机移动和旋转
 //此类包括了如下知识点：
@@ -97,6 +102,17 @@ class CFirstPersonCamera : public CCamera
 public:
 	CFirstPersonCamera(void);
 	~CFirstPersonCamera(void);
+
+	//更新摄像机属性
+	//通常在逻辑帧里面调用此函数，函数内部会自动判断需要更新哪些属性。
+	void Update(void);
+};
+
+class CLightCamera : public CCamera
+{
+public:
+	CLightCamera(void);
+	~CLightCamera(void);
 
 	//更新摄像机属性
 	//通常在逻辑帧里面调用此函数，函数内部会自动判断需要更新哪些属性。

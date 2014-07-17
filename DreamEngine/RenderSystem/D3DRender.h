@@ -32,6 +32,8 @@ private:
 	D3DRender();
 	LPDIRECT3D9                   g_pD3D        ;  // Direct3D对象指针
 	LPDIRECT3DDEVICE9             g_pd3dDevice  ;  // Direct3D设备指针
+	LPDIRECT3DTEXTURE9			  g_pShadowMap;
+	LPDIRECT3DSURFACE9            g_pDSShadow;
 };
 inline void D3DRender::AddRenderObject(RenderObject* obj)
 {
