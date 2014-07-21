@@ -5,7 +5,6 @@ Light::Light():mPosition(5,8,0),mDirection(0,-1,0),mColor(1,1,1,1)
 	mCamera.SetProjParams(D3DX_PI * 0.25f,(float)4.0f / (float)3.0f,1.0f,1000.0f );
 	D3DXVECTOR3 lookat = mPosition + mDirection;
 	mCamera.SetViewParams(mPosition, lookat, D3DXVECTOR3(1,0,0));
-	mCosTheta = cos(D3DX_PI * 0.25f*0.5f);
 }
 Light::~Light()
 {
@@ -14,4 +13,14 @@ Light::~Light()
 void Light::Update()
 {
 	mCamera.Update();
+	mDirection = mCamera.GetEyeDir();
+	mPosition = mCamera.GetEyePos();
+}
+void Light::SetShaderParam(ID3DXEffect* effect)
+{
+	D3DXMATRIX LightVp;
+	D3DXMatrixMultiply(&LightVp,mCamera.GetViewTrans(),mCamera.GetProjTrans());
+	effect->SetMatrix("g_mLightVP",&LightVp);
+	effect->SetVector("g_LightDir",&D3DXVECTOR4(mDirection.x,mDirection.y,mDirection.z,0.0));
+	effect->SetVector("g_vLightPos",&D3DXVECTOR4(mPosition.x,mPosition.y,mPosition.z,0.0));
 }

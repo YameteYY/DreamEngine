@@ -12,7 +12,8 @@ float4	 g_materialDiffuseColor;      // Material's diffuse color
 float4   g_materialSpecularColor;     // Material's specular color
 float    g_specular;				  // 高光参数
 float    g_heightScale;
-float    g_fCosTheta;  // Cosine of theta of the spot light
+float    g_fOuterCosTheta;  // Cosine of theta of the spot light
+float    g_fInnerCosTheta;
 
 texture DiffuseMap;
 texture NormalMap;
@@ -31,9 +32,9 @@ sampler diffuseMap = sampler_state
 sampler shadowMap = sampler_state
 {
     Texture   = (ShadowMap);
-    MinFilter = Point; 
-    MagFilter = Point; 
-    MipFilter = Point;
+    MinFilter = LINEAR; 
+    MagFilter = LINEAR; 
+    MipFilter = LINEAR;
 	ADDRESSU  = CLAMP;
     ADDRESSV  = CLAMP;
 };
@@ -58,11 +59,14 @@ struct VS_OUTPUT
 	float4 vPosLight  : TEXCOORD4;
 	float4 vPosition  : TEXCOORD5;
 };
-float4 CaculateColor(float2 texCoord,float3 vLightTS,float3 vViewTS,float fshadow)
+float4 CaculateColor(float2 texCoord,float3 vLightTS,float3 vViewTS,float fshadow,float lightAmout)
 {
 	 float4 cBaseColor = tex2D( diffuseMap, texCoord );
 	 float3 vNormalTS = normalize( tex2D( normalMap, texCoord ) * 2 - 1 );
-	 float4 cDiffuse = saturate( dot( vNormalTS, -vLightTS)) * g_materialDiffuseColor;
+	  // Compute diffuse color component:
+     float3 vLightTSAdj = float3( -vLightTS.x, vLightTS.y, -vLightTS.z );
+
+	 float4 cDiffuse = ( dot( vNormalTS, vLightTSAdj)) * g_materialDiffuseColor*lightAmout;
 	 
 	 float4 cSpecular = 0;
 
@@ -109,7 +113,7 @@ VS_OUTPUT mainVS( float4 vPos : POSITION0,
 		float fLength         = length( outPut.ViewDirT );
 		float fParallaxLength = sqrt( fLength * fLength - outPut.ViewDirT.z * outPut.ViewDirT.z ) / outPut.ViewDirT.z; 
 		outPut.vParallaxOffsetTS = vParallaxDirection * fParallaxLength;
-		outPut.vParallaxOffsetTS *= 0.1;
+		outPut.vParallaxOffsetTS *= 0.2;
 
 
 		
@@ -175,18 +179,14 @@ float4 pmPS(VS_OUTPUT inPut) : COLOR0
 	 
 	 texCoord -= vParallaxOffset;
 	 
-	 return CaculateColor(texCoord,vLightTS,vViewTS,1.0);
-}
-
-float4 nmPS(VS_OUTPUT inPut) : COLOR0
-{
-	 float3 vViewTS   = normalize( inPut.ViewDirT);
-     float3 vLightTS  = normalize( inPut.LightDirT);
-	 float2 texCoord  = inPut.TextureUV;
 	 
-	 float3 vLight = normalize( inPut.vPosition.xyz - g_vLightPos.xyz );
-	 float LightAmount = 0;
-	 if( dot( vLight, g_LightDir ) > g_fCosTheta )
+	 float3 vLight = inPut.vPosition.xyz - g_vLightPos.xyz;
+	 float lightLenSq = vLight.x*vLight.x + vLight.y*vLight.y + vLight.z*vLight.z;
+	 vLight = normalize(vLight);
+	 float fshadow = 0;
+	 float lightAmout = 0;
+	 float cosalpha = dot( vLight, g_LightDir );
+	 if( cosalpha > g_fOuterCosTheta )
 	 {
 		 float depth = inPut.vPosLight.z/inPut.vPosLight.w;
 
@@ -205,11 +205,59 @@ float4 nmPS(VS_OUTPUT inPut) : COLOR0
 		 sourcevals[2] = tex2D(shadowMap,ShadowTexC + float2(0,1.0/SMAP_SIZE) ) + SHADOW_EPSILON < depth?0.0f:1.0f;
 		 sourcevals[3] = tex2D(shadowMap,ShadowTexC + float2(1.0/SMAP_SIZE,1.0/SMAP_SIZE) ) + SHADOW_EPSILON < depth?0.0f:1.0f;
 
-		 LightAmount  = lerp( lerp( sourcevals[0], sourcevals[1], lerps.x ),
+		 fshadow  = lerp( lerp( sourcevals[0], sourcevals[1], lerps.x ),
 									  lerp( sourcevals[2], sourcevals[3], lerps.x ),
 									  lerps.y );
+		 lightAmout = (cosalpha - g_fOuterCosTheta)/(g_fInnerCosTheta - g_fOuterCosTheta);
+
+		 if(cosalpha > g_fInnerCosTheta)
+		      lightAmout = 1.0;
+		 lightAmout = 1000.0*lightAmout/lightLenSq;
     }
-	 return CaculateColor(texCoord,vLightTS,vViewTS,LightAmount);
+	return CaculateColor(texCoord,vLightTS,vViewTS,fshadow,lightAmout);
+}
+
+float4 nmPS(VS_OUTPUT inPut) : COLOR0
+{
+	 float3 vViewTS   = normalize( inPut.ViewDirT);
+     float3 vLightTS  = normalize( inPut.LightDirT);
+	 float2 texCoord  = inPut.TextureUV;
+	 
+	 float3 vLight = inPut.vPosition.xyz - g_vLightPos.xyz;
+	 float lightLenSq = vLight.x*vLight.x + vLight.y*vLight.y + vLight.z*vLight.z;
+	 vLight = normalize(vLight);
+	 float fshadow = 0;
+	 float lightAmout = 0;
+	 float cosalpha = dot( vLight, g_LightDir );
+	 if( cosalpha > g_fOuterCosTheta )
+	 {
+		 float depth = inPut.vPosLight.z/inPut.vPosLight.w;
+
+		 float2 ShadowTexC = 0.5 * inPut.vPosLight.xy / inPut.vPosLight.w + float2( 0.5, 0.5 );
+		 ShadowTexC.y = 1.0f - ShadowTexC.y;
+
+		 // transform to texel space
+		 float2 texelpos = SMAP_SIZE * ShadowTexC;
+        
+		 // Determine the lerp amounts           
+		 float2 lerps = frac( texelpos );
+
+		 float sourcevals[4];
+		 sourcevals[0] = tex2D(shadowMap,ShadowTexC) + SHADOW_EPSILON < depth?0.0f:1.0f;
+		 sourcevals[1] = tex2D(shadowMap,ShadowTexC + float2(1.0/SMAP_SIZE,0) ) + SHADOW_EPSILON < depth?0.0f:1.0f;
+		 sourcevals[2] = tex2D(shadowMap,ShadowTexC + float2(0,1.0/SMAP_SIZE) ) + SHADOW_EPSILON < depth?0.0f:1.0f;
+		 sourcevals[3] = tex2D(shadowMap,ShadowTexC + float2(1.0/SMAP_SIZE,1.0/SMAP_SIZE) ) + SHADOW_EPSILON < depth?0.0f:1.0f;
+
+		 fshadow  = lerp( lerp( sourcevals[0], sourcevals[1], lerps.x ),
+									  lerp( sourcevals[2], sourcevals[3], lerps.x ),
+									  lerps.y );
+		 lightAmout = (cosalpha - g_fOuterCosTheta)/(g_fInnerCosTheta - g_fOuterCosTheta);
+
+		 if(cosalpha > g_fInnerCosTheta)
+		      lightAmout = 1.0;
+		 lightAmout = 1000.0*lightAmout/lightLenSq;
+    }
+	return CaculateColor(texCoord,vLightTS,vViewTS,fshadow,lightAmout);
 }
 
 void shadowVS(float4 vPos : POSITION0,

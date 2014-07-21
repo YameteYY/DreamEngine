@@ -20,6 +20,20 @@ enum RenderType
 	Surface,
 	Shadow
 };
+// Texture coordinate rectangle
+struct CoordRect
+{
+	float fLeftU, fTopV;
+	float fRightU, fBottomV;
+};
+// Screen quad vertex format
+struct ScreenVertex
+{
+	D3DXVECTOR4 p; // position
+	D3DXVECTOR2 t; // texture coordinate
 
+	static const DWORD FVF = D3DFVF_XYZRHW | D3DFVF_TEX1;
+};
 #define ShadowMap_SIZE 512
+
 #endif

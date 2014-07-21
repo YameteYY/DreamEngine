@@ -1,7 +1,7 @@
 #include "GameServer.h"
 #include "RenderSystem/D3DRender.h"
 #include "Object/MeshRenderObject.h"
-#include "RenderSystem/Light.h"
+#include "RenderSystem/SpotLight.h"
 #include "RenderSystem/Material.h"
 #include "RenderSystem/TextureMgr.h"
 
@@ -55,8 +55,12 @@ bool GameServer::Init(HWND hWnd)
 	mD3DRender->AddRenderObject(mMesh);
 
 
-	Light* light = new Light();
+	SpotLight* light = new SpotLight();
+	light->SetInnerAngle(D3DX_PI*0.05f);
+	light->SetOuterAngle(D3DX_PI * 0.5f);
+	light->InitCamera();
 	mD3DRender->AddLight(light);
+	//mD3DRender->SetCamera(light->GetLightCamera());
 	return true;
 }
 void GameServer::Close()
@@ -67,6 +71,17 @@ void GameServer::Run()
 {
 	g_camera.Update();
 	std::vector<Light*>* lightList = mD3DRender->GetLightList();
-	(*lightList)[0]->Update();
+	if( GetKeyState('U') & 0x8000 )
+	{
+		mD3DRender->SetCamera((*lightList)[0]->GetLightCamera());
+	}
+	if( GetKeyState('M') & 0x8000 )
+	{
+		mD3DRender->SetCamera(&g_camera);
+	}
+	for(int i=0;i<lightList->size();i++)
+	{
+		(*lightList)[i]->Update();
+	}
 	mD3DRender->Render();
 }

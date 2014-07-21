@@ -81,5 +81,8 @@
     <None Include="res\mesh.fx">
       <Filter>Media</Filter>
     </None>
+    <None Include="res\hdr.fx">
+      <Filter>Media</Filter>
+    </None>
   </ItemGroup>
 </Project>

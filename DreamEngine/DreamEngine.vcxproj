@@ -13,6 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2FC6034E-0209-4BCE-B2DA-840D14F074F8}</ProjectGuid>
     <RootNamespace>DreamEngine</RootNamespace>
+    <ProjectName>Practice</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -90,6 +91,7 @@
     <ClInclude Include="RenderSystem\TextureMgr.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\hdr.fx" />
     <None Include="res\mesh.fx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
