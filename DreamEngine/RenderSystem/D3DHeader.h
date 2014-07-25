@@ -18,7 +18,9 @@
 enum RenderType
 {
 	Surface,
-	Shadow
+	Shadow,
+	GBuffer
+
 };
 // Texture coordinate rectangle
 struct CoordRect

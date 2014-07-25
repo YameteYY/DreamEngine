@@ -209,6 +209,10 @@ void MeshRenderObject::Render(RenderType renderType)
 			return;
 		mEffect->SetTechnique(mShadowTechHandle);
 	}
+	else if(renderType == GBuffer)
+	{
+		mEffect->SetTechnique("GBufferTechnique");
+	}
 	UINT numPasses = 0;
 	mEffect->SetMatrix("g_mWorld",&mWord);
 

@@ -10,10 +10,12 @@ public:
 	RenderObject();
 	virtual void Render(RenderType type) = 0;
 	bool SetEffectFromFile(const char* shaderFile);
+	void SetEffect(ID3DXEffect* effect);
 	virtual ~RenderObject();
 	ID3DXEffect* GetEffect();
 	void SetWordTransform(const D3DXMATRIX& word);
 	void SetShadowTech();
+	void SetGBufferTech();
 protected:
 	D3DXMATRIX mWord;
 	ID3DXEffect* mEffect;
@@ -32,5 +34,13 @@ inline void RenderObject::SetWordTransform(const D3DXMATRIX& word)
 inline void RenderObject::SetShadowTech()
 {
 	mSurfaceTechHandle = mEffect->GetTechniqueByName("ShadowTechnique");
+}
+inline void RenderObject::SetGBufferTech()
+{
+	mSurfaceTechHandle = mEffect->GetTechniqueByName("GBufferTechnique");
+}
+inline void RenderObject::SetEffect(ID3DXEffect* effect)
+{
+	mEffect = effect;
 }
 #endif

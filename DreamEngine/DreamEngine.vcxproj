@@ -73,6 +73,8 @@
     <ClCompile Include="Object\RenderObject.cpp" />
     <ClCompile Include="RenderSystem\Camera.cpp" />
     <ClCompile Include="RenderSystem\D3DRender.cpp" />
+    <ClCompile Include="RenderSystem\DeferredShading.cpp" />
+    <ClCompile Include="RenderSystem\HDRLight.cpp" />
     <ClCompile Include="RenderSystem\Light.cpp" />
     <ClCompile Include="RenderSystem\SpotLight.cpp" />
     <ClCompile Include="RenderSystem\TextureMgr.cpp" />
@@ -85,12 +87,16 @@
     <ClInclude Include="RenderSystem\Camera.h" />
     <ClInclude Include="RenderSystem\D3DHeader.h" />
     <ClInclude Include="RenderSystem\D3DRender.h" />
+    <ClInclude Include="RenderSystem\DeferredShading.h" />
+    <ClInclude Include="RenderSystem\HDRLight.h" />
     <ClInclude Include="RenderSystem\Light.h" />
     <ClInclude Include="RenderSystem\Material.h" />
+    <ClInclude Include="RenderSystem\Math.h" />
     <ClInclude Include="RenderSystem\SpotLight.h" />
     <ClInclude Include="RenderSystem\TextureMgr.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\deferred.fx" />
     <None Include="res\hdr.fx" />
     <None Include="res\mesh.fx" />
   </ItemGroup>

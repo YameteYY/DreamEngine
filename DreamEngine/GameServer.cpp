@@ -54,10 +54,27 @@ bool GameServer::Init(HWND hWnd)
 
 	mD3DRender->AddRenderObject(mMesh);
 
+	mMesh = new MeshRenderObject();
+	mMesh->SetEffectFromFile("res/mesh.fx");
+	mMesh->Init("Media/ball.x");
+	mMesh->SetNormalMapRender();
+	std::vector<NormapMaterial>& mat2 = mMesh->GetMaterial();
+	for(int i=0;i<mat2.size();i++)
+	{
+		mat2[i].NormalMap = TextureMgr::Instance()->GetTexture("Media/stones_NM_height.tga");
+		mat2[i].Specular = 100;
+	}
+	D3DXMatrixTranslation(&word,8,-3,8);
+	D3DXMatrixScaling(&scale,3,3,3);
+	D3DXMatrixMultiply(&word,&scale,&word);
+	mMesh->SetWordTransform(word);
+	mD3DRender->AddRenderObject(mMesh);
+
 
 	SpotLight* light = new SpotLight();
 	light->SetInnerAngle(D3DX_PI*0.05f);
-	light->SetOuterAngle(D3DX_PI * 0.5f);
+	light->SetOuterAngle(D3DX_PI * 0.75f);
+	
 	light->InitCamera();
 	mD3DRender->AddLight(light);
 	//mD3DRender->SetCamera(light->GetLightCamera());

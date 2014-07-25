@@ -44,6 +44,12 @@
     <ClCompile Include="RenderSystem\TextureMgr.cpp">
       <Filter>RenderSystem</Filter>
     </ClCompile>
+    <ClCompile Include="RenderSystem\HDRLight.cpp">
+      <Filter>RenderSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSystem\DeferredShading.cpp">
+      <Filter>RenderSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameServer.h">
@@ -76,12 +82,24 @@
     <ClInclude Include="RenderSystem\TextureMgr.h">
       <Filter>RenderSystem</Filter>
     </ClInclude>
+    <ClInclude Include="RenderSystem\Math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem\HDRLight.h">
+      <Filter>RenderSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem\DeferredShading.h">
+      <Filter>RenderSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\mesh.fx">
       <Filter>Media</Filter>
     </None>
     <None Include="res\hdr.fx">
+      <Filter>Media</Filter>
+    </None>
+    <None Include="res\deferred.fx">
       <Filter>Media</Filter>
     </None>
   </ItemGroup>

@@ -40,7 +40,7 @@ struct NormapMaterial : public Material
 struct ParallaxMaterial : public NormapMaterial
 {
 	float HeightScale;
-	ParallaxMaterial():HeightScale(0.1)
+	ParallaxMaterial():HeightScale(0.1f)
 	{
 	}
 	virtual void SetParam(ID3DXEffect* effect)
