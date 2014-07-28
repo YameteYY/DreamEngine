@@ -26,7 +26,7 @@ public:
 	std::vector<Light*>* GetLightList();
 	void AddRenderObject(RenderObject* obj);
 	void AddLight(Light* light);
-	LPDIRECT3DTEXTURE9 GetShadowMap();
+	std::vector<LPDIRECT3DTEXTURE9>* GetShadowMap();
 private:
 	void _renderShadowMap();
 	void _renderSurface();
@@ -40,19 +40,15 @@ private:
 	bool					g_deferredShading;
 	static D3DRender* m_pInstance;
 	D3DRender();
-	D3DPRESENT_PARAMETERS		  g_D3dpp;
-	LPDIRECT3D9                   g_pD3D        ;  // Direct3D对象指针
-	LPDIRECT3DDEVICE9             g_pd3dDevice  ;  // Direct3D设备指针
-	LPDIRECT3DTEXTURE9			  g_pShadowMap;
-	LPDIRECT3DSURFACE9            g_pDSShadow;
+	D3DPRESENT_PARAMETERS						g_D3dpp;
+	LPDIRECT3D9									g_pD3D        ;  // Direct3D对象指针
+	LPDIRECT3DDEVICE9							g_pd3dDevice  ;  // Direct3D设备指针
+	std::vector<LPDIRECT3DTEXTURE9>				g_pShadowMapList;
+	LPDIRECT3DSURFACE9							g_pDSShadow;
 };
 inline void D3DRender::AddRenderObject(RenderObject* obj)
 {
 	mRenderObjectList.push_back(obj);
-}
-inline void D3DRender::AddLight(Light* light)
-{
-	mLightList.push_back(light);
 }
 inline LPDIRECT3DDEVICE9 D3DRender::GetDevice()
 {
@@ -70,9 +66,9 @@ inline std::vector<Light*>* D3DRender::GetLightList()
 {
 	return &mLightList;
 }
-inline LPDIRECT3DTEXTURE9 D3DRender::GetShadowMap()
+inline std::vector<LPDIRECT3DTEXTURE9>* D3DRender::GetShadowMap()
 {
-	return g_pShadowMap;
+	return &g_pShadowMapList;
 }
 
 

@@ -14,7 +14,7 @@ public:
 
 	float GetCosHalfOutAngle();
 	virtual void SetShaderParam(ID3DXEffect* effect);
-	void InitCamera();
+	virtual void InitCamera();
 private:
 	float mInnerAngle;
 	float mOuterAngle;

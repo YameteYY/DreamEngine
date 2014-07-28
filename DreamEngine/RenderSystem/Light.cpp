@@ -11,6 +11,12 @@ Light::~Light()
 {
 
 }
+void Light::InitCamera()
+{
+	mCamera.SetProjParams(D3DX_PI * 0.25f,(float)4.0f / (float)3.0f,1.0f,1000.0f );
+	D3DXVECTOR3 lookat = mPosition + mDirection;
+	mCamera.SetViewParams(mPosition, lookat, D3DXVECTOR3(1,0,0));
+}
 void Light::Update()
 {
 	mCamera.Update();

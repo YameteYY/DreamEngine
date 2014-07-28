@@ -10,6 +10,9 @@ public:
 	virtual ~Light();
 	const D3DXVECTOR3& GetPosition() const;
 	const D3DXVECTOR3& GetDirection() const;
+	
+	void SetPosition(const D3DXVECTOR3& pos);
+	void SetDirection(const D3DXVECTOR3& dir);
 
 	void SetColor(const D3DXVECTOR4& color);
 	const D3DXVECTOR4& GetColor() const;
@@ -19,6 +22,7 @@ public:
 	//返回当前的投影矩阵
 	const D3DXMATRIX *GetProjTrans() const;
 	void Update();
+	virtual void InitCamera();
 	virtual void SetShaderParam(ID3DXEffect* effect);
 	CLightCamera* GetLightCamera();
 protected:
@@ -56,6 +60,14 @@ inline void Light::SetColor(const D3DXVECTOR4& color)
 inline const D3DXVECTOR4& Light::GetColor() const
 {
 	return mColor;
+}
+inline void Light::SetPosition(const D3DXVECTOR3& pos)
+{
+	mPosition = pos;
+}
+inline void Light::SetDirection(const D3DXVECTOR3& dir)
+{
+	mDirection = dir;
 }
 
 

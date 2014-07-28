@@ -58,12 +58,6 @@ bool GameServer::Init(HWND hWnd)
 	mMesh->SetEffectFromFile("res/mesh.fx");
 	mMesh->Init("Media/ball.x");
 	mMesh->SetNormalMapRender();
-	std::vector<NormapMaterial>& mat2 = mMesh->GetMaterial();
-	for(int i=0;i<mat2.size();i++)
-	{
-		mat2[i].NormalMap = TextureMgr::Instance()->GetTexture("Media/stones_NM_height.tga");
-		mat2[i].Specular = 100;
-	}
 	D3DXMatrixTranslation(&word,8,-3,8);
 	D3DXMatrixScaling(&scale,3,3,3);
 	D3DXMatrixMultiply(&word,&scale,&word);
@@ -74,10 +68,23 @@ bool GameServer::Init(HWND hWnd)
 	SpotLight* light = new SpotLight();
 	light->SetInnerAngle(D3DX_PI*0.05f);
 	light->SetOuterAngle(D3DX_PI * 0.75f);
-	
+	light->SetColor(D3DXVECTOR4(0.0,0.5,0,1));
+	light->SetPosition(D3DXVECTOR3(5,5,5));
+	light->SetDirection(D3DXVECTOR3(-1,-1,-1));
 	light->InitCamera();
+
 	mD3DRender->AddLight(light);
-	//mD3DRender->SetCamera(light->GetLightCamera());
+
+	light = new SpotLight();
+	light->SetInnerAngle(D3DX_PI*0.05f);
+	light->SetOuterAngle(D3DX_PI * 0.5f);
+	light->SetPosition(D3DXVECTOR3(-5,5,-5));
+	light->SetDirection(D3DXVECTOR3(1,-1,1));
+	light->SetColor(D3DXVECTOR4(0.5,0,0,1));
+	light->InitCamera();
+
+	mD3DRender->AddLight(light);
+	
 	return true;
 }
 void GameServer::Close()

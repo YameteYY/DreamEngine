@@ -63,9 +63,6 @@ void DeferredShading::SetRenderTarget(int iRenderTargetIdx,LPDIRECT3DTEXTURE9 pd
 }
 void DeferredShading::RenderGBuffer(std::vector<RenderObject*> renderObjList)
 {
-	ClearTexture(mDiffuseTex,0x0);
-	ClearTexture(mNormalTex,0x0);
-	ClearTexture(mPositionTex,0x0);
 
 	LPDIRECT3DSURFACE9 pOldRT[3] = {0};
 	g_pd3dDevice->GetRenderTarget(0,&pOldRT[0]);
@@ -118,32 +115,39 @@ void DeferredShading::RenderGBuffer(std::vector<RenderObject*> renderObjList)
 }
 void DeferredShading::RenderLight(std::vector<Light*>* lightList)
 {
-	g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.25f, 0.25f, 0.55f ), 1.0f,
+	g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.0f, 0.0f, 0.0f ), 1.0f,
 		0 );
 	g_pd3dDevice->BeginScene();
 	
 	CCamera* g_camera = D3DRender::Instance()->GetCamera();
 	const D3DXVECTOR3& eyePos = g_camera->GetEyePos();
+	std::vector<LPDIRECT3DTEXTURE9>* shadowMapList = D3DRender::Instance()->GetShadowMap();
 	mDeferredEffect->SetVector("g_EyePos",&D3DXVECTOR4(eyePos.x,eyePos.y,eyePos.z,1.0f) );
-	mDeferredEffect->SetTexture("ShadowMap",D3DRender::Instance()->GetShadowMap());
 	mDeferredEffect->SetTexture("DiffuseMap",mDiffuseTex);
 	mDeferredEffect->SetTexture("NormalMap",mNormalTex);
 	mDeferredEffect->SetTexture("PositionMap",mPositionTex);
 	mDeferredEffect->SetTechnique("LightTechnique");
 	mDeferredEffect->CommitChanges();
-	UINT uiPassCount, uiPass;
-	mDeferredEffect->Begin( &uiPassCount, 0 );
-	for( uiPass = 0; uiPass < uiPassCount; uiPass++ )
+	g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE,true);
+	g_pd3dDevice->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
+	g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ONE);
+	int len = lightList->size();
+	for(int i=0;i<len;i++)
 	{
-		mDeferredEffect->BeginPass(uiPass);
-		for(int i=0;i<lightList->size();i++)
+		mDeferredEffect->SetTexture("ShadowMap",(*shadowMapList)[i]);
+		UINT uiPassCount, uiPass;
+		mDeferredEffect->Begin( &uiPassCount, 0 );
+		for( uiPass = 0; uiPass < uiPassCount; uiPass++ )
 		{
+			mDeferredEffect->BeginPass(uiPass);
 			(*lightList)[i]->SetShaderParam(mDeferredEffect);
+			mDeferredEffect->CommitChanges();
 			DrawFullScreenQuad(g_pd3dDevice,0,0,1,1);
+			mDeferredEffect->EndPass();
 		}
-		mDeferredEffect->EndPass();
+		mDeferredEffect->End();
 	}
-	mDeferredEffect->End();
+	g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE,false);
 	g_pd3dDevice->EndScene();
 	g_pd3dDevice->Present(0,0,0,0);
 }

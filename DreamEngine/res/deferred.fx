@@ -1,6 +1,8 @@
 #define SMAP_SIZE 512
 #define SHADOW_EPSILON 0.000005f
 static const float4 globalAmbient  = float4(0.1, 0.1, 0.1,0.1);
+const float2 aoVec[4] = {float2(1,0),float2(-1,0),  
+            float2(0,1),float2(0,-1)};  
 float4x4 g_mWorld;                  // World matrix for object
 float4x4 g_mViewProjection;    //  View * Projection matrix
 float4x4 g_mLightVP;			// View * Projection matrix
@@ -120,7 +122,13 @@ GBuffPS_OUTPUT GBufferPS(GBuffVS_OUTPUT inPut)
 
 	return outPut;
 }
-
+float doAmbientOcclusion(in float2 tcoord,in float2 uv,in float3 p,in float3 n)
+{
+	float3 diff = tex2D( positionMap, tcoord + uv) - p;
+	float3 v = normalize(diff);
+	float d = length(diff)*0.1;
+	return max(0,dot(n,v) - 0.1)*(1.0/(1.0+d))*3.0;
+}
 float4 LightPS(
 		in float2 vScreenPosition : TEXCOORD0
 		):COLOR
@@ -135,8 +143,9 @@ float4 LightPS(
 	float lightLenSq = vLight.x*vLight.x + vLight.y*vLight.y + vLight.z*vLight.z;
 	vLight = normalize(vLight);
 	vViewDir = normalize(vViewDir);
+
 	float fshadow = 0.0;
-	float lightAmout = 0;
+	float lightAmout = 0.0;
 	float cosalpha = dot( vLight,  lightDir);
 	if( cosalpha >= g_fOuterCosTheta )
 	{
@@ -154,22 +163,35 @@ float4 LightPS(
 
 		 lightAmout = (cosalpha - g_fOuterCosTheta)/(g_fInnerCosTheta - g_fOuterCosTheta);
 
-		if(cosalpha > g_fInnerCosTheta)
+		 if(cosalpha > g_fInnerCosTheta)
 		      lightAmout = 1.0;
-	    lightAmout = 1000.0*lightAmout/lightLenSq;
+	     lightAmout = 1000.0*lightAmout/lightLenSq;
    }
+   float ao = 0;
+   float rad = 2.0/vPos.z;
+   for(int i=0;i<4;i++)
+   {
+		float2 coord1 = aoVec[i]*rad;
+		float2 coord2 = float2(coord1.x*0.707 - coord1.y*0.707, coord1.x*0.707 + coord1.y*0.707);
+		ao += doAmbientOcclusion(vScreenPosition,coord1*0.25,vPos,vNormal);
+		ao += doAmbientOcclusion(vScreenPosition,coord2*0.5,vPos,vNormal);
+		ao += doAmbientOcclusion(vScreenPosition,coord1*0.75,vPos,vNormal);
+		ao += doAmbientOcclusion(vScreenPosition,coord2,vPos,vNormal);
+   }
+   ao /= 16.0;
+//   return float4(ao,ao,ao,ao);
    float4 cDiffuse = max(dot(vNormal,-lightDir) ,0)*lightAmout*fshadow*g_LightColor + globalAmbient;
 
    float4 cSpecular = 0;
    float3 halfvec = vViewDir - lightDir;
    halfvec = normalize(halfvec);
-   float fRdotL = max(0,dot(vNormal,halfvec));
+   float fRdotL = saturate(dot(vNormal,halfvec));
 
    cSpecular =  pow( fRdotL, 100)*g_LightColor;
 
    float4 cFinalColor = cDiffuse *cBaseColor + cSpecular* fshadow*lightAmout;
-
-   return cFinalColor ;//float4(vNormal,1);
+   cFinalColor.a = 0.5;
+   return cFinalColor* (1.0 - ao);//float4(vNormal,1);
 }
 
 

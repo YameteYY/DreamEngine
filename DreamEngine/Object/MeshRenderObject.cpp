@@ -42,7 +42,7 @@ bool MeshRenderObject::Init(const char* meshName)
 	if( mtrlBuffer != 0 && mNumMesh != 0 )
 	{
 		D3DXMATERIAL* mtrls = (D3DXMATERIAL*)mtrlBuffer->GetBufferPointer();
-		for(int i = 0; i < mNumMesh; i++)
+		for(DWORD i = 0; i < mNumMesh; i++)
 		{
 			NormapMaterial mat;
 			mat.AmbientColor = D3DXVECTOR4(mtrls[i].MatD3D.Ambient.r,mtrls[i].MatD3D.Ambient.g,
@@ -90,7 +90,7 @@ bool MeshRenderObject::Init(const char* meshName)
 	if( FAILED( mMesh->CloneMesh( mMesh->GetOptions(), vertexDecl, Device, &pTempMesh ) ) )
 	{
 		SAFE_RELEASE( pTempMesh );
-		return E_FAIL;
+		return false;
 	}
 
 	//====================================================================//
@@ -127,7 +127,7 @@ bool MeshRenderObject::Init(const char* meshName)
 	if( pTempMesh == NULL && ( bHadNormal == false || bHadTangent == false || bHadBinormal == false ) )
 	{
 		// We failed to clone the mesh and we need the tangent space for our effect:
-		return E_FAIL;
+		return false;
 	}
 
 	//==============================================================//
@@ -147,7 +147,7 @@ bool MeshRenderObject::Init(const char* meshName)
 
 	if( rgdwAdjacency == NULL )
 	{
-		return E_OUTOFMEMORY;
+		return false;
 	}
 	mMesh->GenerateAdjacency( 1e-6f, rgdwAdjacency );
 
@@ -167,7 +167,7 @@ bool MeshRenderObject::Init(const char* meshName)
 			D3DDECLUSAGE_NORMAL, 0, D3DXTANGENT_GENERATE_IN_PLACE, rgdwAdjacency, -1.01f,
 			-0.01f, -1.01f, &pNewMesh, NULL ) ) )
 		{
-			return E_FAIL;
+			return false;
 		}
 
 		//SAFE_RELEASE( mMesh );
@@ -221,10 +221,10 @@ void MeshRenderObject::Render(RenderType renderType)
 	Device->SetIndices(mIndexBuffer);
 
 	mEffect->Begin(&numPasses,0);
-	for(int j=0;j<numPasses;j++)
+	for(UINT j=0;j<numPasses;j++)
 	{
 		mEffect->BeginPass(j);
-		for (int i=0;i<mNumMesh;i++)
+		for (DWORD i=0;i<mNumMesh;i++)
 		{
 			mMaterial[i].SetParam(mEffect);
 

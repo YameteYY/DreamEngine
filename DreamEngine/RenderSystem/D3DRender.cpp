@@ -9,7 +9,7 @@ D3DRender::D3DRender()
 {
 	g_pD3D = NULL;
 	g_pd3dDevice = NULL;
-	g_usedHDR = false;
+	g_usedHDR = true;
 	g_deferredShading = true;
 }
 D3DRender::~D3DRender()
@@ -49,14 +49,6 @@ HRESULT  D3DRender::InitD3D( HWND hWnd)
 		return E_FAIL;
 	}
 
-	// Create the shadow map texture
-	g_pd3dDevice->CreateTexture( ShadowMap_SIZE, ShadowMap_SIZE,
-		1, D3DUSAGE_RENDERTARGET,
-		D3DFMT_R32F,
-		D3DPOOL_DEFAULT,
-		&g_pShadowMap,
-		NULL );
-
 	g_pd3dDevice->CreateDepthStencilSurface( ShadowMap_SIZE,
 		ShadowMap_SIZE,
 		g_D3dpp.AutoDepthStencilFormat,
@@ -71,6 +63,18 @@ HRESULT  D3DRender::InitD3D( HWND hWnd)
 	mDeferredShading = new DeferredShading();
 	mDeferredShading->Init(d3ddm);
 	return S_OK;
+}
+void D3DRender::AddLight(Light* light)
+{
+	mLightList.push_back(light);
+	LPDIRECT3DTEXTURE9 shadowMap;
+	g_pd3dDevice->CreateTexture( ShadowMap_SIZE, ShadowMap_SIZE,
+		1, D3DUSAGE_RENDERTARGET,
+		D3DFMT_R32F,
+		D3DPOOL_DEFAULT,
+		&shadowMap,
+		NULL );
+	g_pShadowMapList.push_back(shadowMap);
 }
 void D3DRender::Render()
 {
@@ -105,30 +109,36 @@ void D3DRender::_renderShadowMap()
 {
 	LPDIRECT3DSURFACE9 pOldRT = NULL;
 	g_pd3dDevice->GetRenderTarget(0,&pOldRT);
-	LPDIRECT3DSURFACE9 pShadowSurf;
-	if( SUCCEEDED( g_pShadowMap->GetSurfaceLevel( 0, &pShadowSurf ) ) )
-	{
-		g_pd3dDevice->SetRenderTarget( 0, pShadowSurf );
-		SAFE_RELEASE( pShadowSurf );
-	}
+
 	LPDIRECT3DSURFACE9 pOldDS = NULL;
 	if( SUCCEEDED( g_pd3dDevice->GetDepthStencilSurface( &pOldDS ) ) )
 		g_pd3dDevice->SetDepthStencilSurface( g_pDSShadow );
 
 	{
-		g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.25f, 0.25f, 0.55f ), 1.0f,
-			0 );
-		g_pd3dDevice->BeginScene();
-		ID3DXEffect* effect = NULL;
-		int len = mRenderObjectList.size();
-		for(int i=0;i<len;i++)
+		int shLen = g_pShadowMapList.size();
+		for(int i=0;i<shLen;i++)
 		{
-			effect = mRenderObjectList[i]->GetEffect();
-			mLightList[0]->SetShaderParam(effect);
-			mRenderObjectList[i]->Render(Shadow);
+			LPDIRECT3DSURFACE9 pShadowSurf;
+			if( SUCCEEDED( g_pShadowMapList[i]->GetSurfaceLevel( 0, &pShadowSurf ) ) )
+			{
+				g_pd3dDevice->SetRenderTarget( 0, pShadowSurf );
+				SAFE_RELEASE( pShadowSurf );
+			}
+
+			g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.25f, 0.25f, 0.55f ), 1.0f,
+				0 );
+			g_pd3dDevice->BeginScene();
+			ID3DXEffect* effect = NULL;
+			int len = mRenderObjectList.size();
+			for(int j=0;j<len;j++)
+			{
+				effect = mRenderObjectList[j]->GetEffect();
+				mLightList[i]->SetShaderParam(effect);
+				mRenderObjectList[j]->Render(Shadow);
+			}
+			g_pd3dDevice->EndScene();
+			g_pd3dDevice->Present(0,0,0,0);
 		}
-		g_pd3dDevice->EndScene();
-		g_pd3dDevice->Present(0,0,0,0);
 	}
 
 	if( pOldDS )
@@ -159,9 +169,8 @@ void D3DRender::_renderSurface()
 		
 		effect->SetVector("g_EyePos",&D3DXVECTOR4(eyePos.x,eyePos.y,eyePos.z,1.0f) );
 		effect->SetMatrix("g_mViewProjection",&vp);
-		effect->SetTexture("ShadowMap",g_pShadowMap);
-		for(int j=0;j<mLightList.size();j++)
-			mLightList[j]->SetShaderParam(effect);
+		effect->SetTexture("ShadowMap",g_pShadowMapList[0]);
+		mLightList[0]->SetShaderParam(effect);
 		mRenderObjectList[i]->Render(Surface);
 	}
 	g_pd3dDevice->EndScene();
