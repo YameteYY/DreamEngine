@@ -71,7 +71,9 @@
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="Object\MeshRenderObject.cpp" />
     <ClCompile Include="Object\RenderObject.cpp" />
+    <ClCompile Include="Object\TimeManager.cpp" />
     <ClCompile Include="RenderSystem\Camera.cpp" />
+    <ClCompile Include="RenderSystem\D3DFont.cpp" />
     <ClCompile Include="RenderSystem\D3DRender.cpp" />
     <ClCompile Include="RenderSystem\DeferredShading.cpp" />
     <ClCompile Include="RenderSystem\HDRLight.cpp" />
@@ -84,7 +86,9 @@
     <ClInclude Include="GameServer.h" />
     <ClInclude Include="Object\MeshRenderObject.h" />
     <ClInclude Include="Object\RenderObject.h" />
+    <ClInclude Include="Object\TimeManager.h" />
     <ClInclude Include="RenderSystem\Camera.h" />
+    <ClInclude Include="RenderSystem\D3DFont.h" />
     <ClInclude Include="RenderSystem\D3DHeader.h" />
     <ClInclude Include="RenderSystem\D3DRender.h" />
     <ClInclude Include="RenderSystem\DeferredShading.h" />

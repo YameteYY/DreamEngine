@@ -3,6 +3,8 @@
 #include "Camera.h"
 #include "SpotLight.h"
 #include "DeferredShading.h"
+#include "D3DFont.h"
+#include "../Object/TimeManager.h"
 
 D3DRender* D3DRender::m_pInstance = 0;
 D3DRender::D3DRender()
@@ -37,7 +39,7 @@ HRESULT  D3DRender::InitD3D( HWND hWnd)
 	g_D3dpp.BackBufferWidth = d3ddm.Width;
 	g_D3dpp.BackBufferHeight = d3ddm.Height;
 	g_D3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	g_D3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+	g_D3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	g_D3dpp.EnableAutoDepthStencil = true;
 	g_D3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 
@@ -62,6 +64,7 @@ HRESULT  D3DRender::InitD3D( HWND hWnd)
 	mHDRLightPostEffect->Init(g_pd3dDevice,g_D3dpp);
 	mDeferredShading = new DeferredShading();
 	mDeferredShading->Init(d3ddm);
+	D3DFont::Instance()->Init(g_pd3dDevice);
 	return S_OK;
 }
 void D3DRender::AddLight(Light* light)
@@ -80,11 +83,11 @@ void D3DRender::Render()
 {
 	if( GetKeyState('H') & 0x8000 )
 	{
-		g_deferredShading = true;
+		g_usedHDR = true;
 	}
 	if( GetKeyState('J') & 0x8000 )
 	{
-		g_deferredShading = false;
+		g_usedHDR = false;
 	}
 	_renderShadowMap();
 
@@ -101,9 +104,11 @@ void D3DRender::Render()
 		mDeferredShading->RenderGBuffer(mRenderObjectList);
 		mDeferredShading->RenderLight(&mLightList);
 	}
-	if(!g_usedHDR)
-		return;
-	mHDRLightPostEffect->Render();
+	if(g_usedHDR)
+		mHDRLightPostEffect->Render();
+	char timeStr[64];
+	sprintf(timeStr,"%f",TimeManager::Instance()->GetFPS());
+	D3DFont::Instance()->Draw(timeStr);
 }
 void D3DRender::_renderShadowMap()
 {

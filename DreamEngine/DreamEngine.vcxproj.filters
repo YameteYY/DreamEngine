@@ -50,6 +50,12 @@
     <ClCompile Include="RenderSystem\DeferredShading.cpp">
       <Filter>RenderSystem</Filter>
     </ClCompile>
+    <ClCompile Include="RenderSystem\D3DFont.cpp">
+      <Filter>RenderSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\TimeManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameServer.h">
@@ -90,6 +96,12 @@
     </ClInclude>
     <ClInclude Include="RenderSystem\DeferredShading.h">
       <Filter>RenderSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem\D3DFont.h">
+      <Filter>RenderSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\TimeManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

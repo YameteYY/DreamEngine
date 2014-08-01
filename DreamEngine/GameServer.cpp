@@ -4,6 +4,7 @@
 #include "RenderSystem/SpotLight.h"
 #include "RenderSystem/Material.h"
 #include "RenderSystem/TextureMgr.h"
+#include "Object/TimeManager.h"
 
 bool GameServer::Init(HWND hWnd)
 {
@@ -56,7 +57,7 @@ bool GameServer::Init(HWND hWnd)
 
 	mMesh = new MeshRenderObject();
 	mMesh->SetEffectFromFile("res/mesh.fx");
-	mMesh->Init("Media/ball.x");
+	mMesh->Init("Media/airplane2.x");
 	mMesh->SetNormalMapRender();
 	D3DXMatrixTranslation(&word,8,-3,8);
 	D3DXMatrixScaling(&scale,3,3,3);
@@ -93,6 +94,7 @@ void GameServer::Close()
 }
 void GameServer::Run()
 {
+	TimeManager::Instance()->Update();
 	g_camera.Update();
 	std::vector<Light*>* lightList = mD3DRender->GetLightList();
 	if( GetKeyState('U') & 0x8000 )

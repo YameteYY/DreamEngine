@@ -3,6 +3,7 @@
 static const float4 globalAmbient  = float4(0.1, 0.1, 0.1,0.1);
 const float2 aoVec[4] = {float2(1,0),float2(-1,0),  
             float2(0,1),float2(0,-1)};  
+static const float sqrttwopi = 1.0/sqrt(2.0*3.1415);
 float4x4 g_mWorld;                  // World matrix for object
 float4x4 g_mViewProjection;    //  View * Projection matrix
 float4x4 g_mLightVP;			// View * Projection matrix
@@ -115,7 +116,7 @@ GBuffPS_OUTPUT GBufferPS(GBuffVS_OUTPUT inPut)
 	outPut.diffuse = tex2D(diffuseMap,inPut.TextureUV);
 	outPut.position = inPut.vPosition;
 
-	float3 vNormalTS = normalize( tex2D( normalMap, inPut.TextureUV ) * 2 - 1 );
+	float3 vNormalTS = tex2D( normalMap, inPut.TextureUV ) * 2 - 1;
 	float3x3 mWorldToTangent = float3x3(inPut.InTangentWS, inPut.InBinormalWS,inPut.InNormalWS );
 	float3 normalWS = normalize(mul(vNormalTS,mWorldToTangent));
 	outPut.normal = float4(normalWS,1.0);
@@ -128,6 +129,11 @@ float doAmbientOcclusion(in float2 tcoord,in float2 uv,in float3 p,in float3 n)
 	float3 v = normalize(diff);
 	float d = length(diff)*0.1;
 	return max(0,dot(n,v) - 0.1)*(1.0/(1.0+d))*3.0;
+}
+float gsWeight(float4 color1,float4 color2)
+{
+	float dif = length(color1 - color2);
+	return sqrttwopi*exp(-dif*dif*0.5);
 }
 float4 LightPS(
 		in float2 vScreenPosition : TEXCOORD0
@@ -168,18 +174,31 @@ float4 LightPS(
 	     lightAmout = 1000.0*lightAmout/lightLenSq;
    }
    float ao = 0;
-   float rad = 2.0/vPos.z;
+   float rad = 0.5/mul(vPos,g_mViewProjection).z;
+   float totalWeight = 0;
+   float weight = 0;
    for(int i=0;i<4;i++)
    {
 		float2 coord1 = aoVec[i]*rad;
 		float2 coord2 = float2(coord1.x*0.707 - coord1.y*0.707, coord1.x*0.707 + coord1.y*0.707);
-		ao += doAmbientOcclusion(vScreenPosition,coord1*0.25,vPos,vNormal);
-		ao += doAmbientOcclusion(vScreenPosition,coord2*0.5,vPos,vNormal);
-		ao += doAmbientOcclusion(vScreenPosition,coord1*0.75,vPos,vNormal);
-		ao += doAmbientOcclusion(vScreenPosition,coord2,vPos,vNormal);
+		weight = gsWeight(cBaseColor,tex2D(diffuseMap,coord1*0.25) );
+		ao += weight*doAmbientOcclusion(vScreenPosition,coord1*0.25,vPos.xyz,vNormal);
+		totalWeight += weight;
+
+		weight = gsWeight(cBaseColor,tex2D(diffuseMap,coord2*0.5) );
+		ao += weight*doAmbientOcclusion(vScreenPosition,coord2*0.5,vPos.xyz,vNormal);
+		totalWeight += weight;
+
+		weight = gsWeight(cBaseColor,tex2D(diffuseMap,coord1*0.75) );
+		ao += weight*doAmbientOcclusion(vScreenPosition,coord1*0.75,vPos.xyz,vNormal);
+		totalWeight += weight;
+
+		weight = gsWeight(cBaseColor,tex2D(diffuseMap,coord2) );
+		ao += weight*doAmbientOcclusion(vScreenPosition,coord2,vPos.xyz,vNormal);
+		totalWeight += weight;
    }
-   ao /= 16.0;
-//   return float4(ao,ao,ao,ao);
+   ao /= totalWeight;
+  // return 1-ao;
    float4 cDiffuse = max(dot(vNormal,-lightDir) ,0)*lightAmout*fshadow*g_LightColor + globalAmbient;
 
    float4 cSpecular = 0;
@@ -191,7 +210,7 @@ float4 LightPS(
 
    float4 cFinalColor = cDiffuse *cBaseColor + cSpecular* fshadow*lightAmout;
    cFinalColor.a = 0.5;
-   return cFinalColor* (1.0 - ao);//float4(vNormal,1);
+   return cFinalColor * (1.0 - ao);//float4(vNormal,1);
 }
 
 
