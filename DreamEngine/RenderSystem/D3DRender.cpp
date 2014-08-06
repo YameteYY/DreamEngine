@@ -103,11 +103,12 @@ void D3DRender::Render()
 	{
 		mDeferredShading->RenderGBuffer(mRenderObjectList);
 		mDeferredShading->RenderLight(&mLightList);
+		mDeferredShading->RenderSSAO();
 	}
 	if(g_usedHDR)
 		mHDRLightPostEffect->Render();
 	char timeStr[64];
-	sprintf(timeStr,"%f",TimeManager::Instance()->GetFPS());
+	sprintf(timeStr,"%.2f",TimeManager::Instance()->GetFPS());
 	D3DFont::Instance()->Draw(timeStr);
 }
 void D3DRender::_renderShadowMap()

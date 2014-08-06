@@ -12,12 +12,18 @@ public:
 	void SetOuterAngle(float outAngle);
 	float GetOuterAngle();
 
+	void SetDistance(float distance);
+	float GetDistance();
+
 	float GetCosHalfOutAngle();
 	virtual void SetShaderParam(ID3DXEffect* effect);
 	virtual void InitCamera();
+	virtual void Render(ID3DXEffect* effect);
 private:
+	virtual void _buildShape();
 	float mInnerAngle;
 	float mOuterAngle;
+	float mDistance;
 };
 
 inline void SpotLight::SetInnerAngle(float innerAngle)
@@ -39,6 +45,14 @@ inline float SpotLight::GetOuterAngle()
 inline float SpotLight::GetCosHalfOutAngle()
 {
 	return cos(mOuterAngle*0.5);
+}
+inline void SpotLight::SetDistance(float distance)
+{
+	mDistance = distance;
+}
+inline float SpotLight::GetDistance()
+{
+	return mDistance;
 }
 
 #endif

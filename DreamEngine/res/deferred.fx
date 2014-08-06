@@ -1,6 +1,6 @@
-#define SMAP_SIZE 512
+#define SMAP_SIZE 1024
 #define SHADOW_EPSILON 0.000005f
-static const float4 globalAmbient  = float4(0.1, 0.1, 0.1,0.1);
+static const float4 globalAmbient  = float4(0.05, 0.05, 0.05,0.05);
 const float2 aoVec[4] = {float2(1,0),float2(-1,0),  
             float2(0,1),float2(0,-1)};  
 static const float sqrttwopi = 1.0/sqrt(2.0*3.1415);
@@ -36,8 +36,8 @@ sampler shadowMap = sampler_state
     MinFilter = LINEAR; 
     MagFilter = LINEAR; 
     MipFilter = LINEAR;
-	ADDRESSU  = CLAMP;
-    ADDRESSV  = CLAMP;
+	ADDRESSU  = BORDER;
+    ADDRESSV  = BORDER;
 };
 
 sampler normalMap = sampler_state
@@ -59,23 +59,6 @@ sampler positionMap = sampler_state
 	ADDRESSU  = CLAMP;
     ADDRESSV  = CLAMP;
 };
-
-
-void shadowVS(float4 vPos : POSITION0,
-			  out float4 oPos:POSITION,
-			  out float2 Depth:TEXCOORD0)
-{
-	float4 vPosition = mul(vPos,g_mWorld);
-	oPos = mul(vPosition,g_mLightVP);
-
-	Depth.xy = oPos.zw;
-}
-float4 shadowPS(float2 Depth:TEXCOORD0) : COLOR0
-{
-	float4 color;
-	color.rgb = float3(1,1,1);
-	return color.a = Depth.x/Depth.y;
-}
 struct GBuffVS_OUTPUT
 {
 	float4 Position		 : POSITION0;   // vertex position 
@@ -120,8 +103,12 @@ GBuffPS_OUTPUT GBufferPS(GBuffVS_OUTPUT inPut)
 	float3x3 mWorldToTangent = float3x3(inPut.InTangentWS, inPut.InBinormalWS,inPut.InNormalWS );
 	float3 normalWS = normalize(mul(vNormalTS,mWorldToTangent));
 	outPut.normal = float4(normalWS,1.0);
-
 	return outPut;
+}
+float4 AmbientPS(in float2 texcoord:TEXCOORD0):Color0
+{
+	float4 cBaseColor = tex2D( diffuseMap, texcoord );
+	return globalAmbient*cBaseColor;
 }
 float doAmbientOcclusion(in float2 tcoord,in float2 uv,in float3 p,in float3 n)
 {
@@ -135,11 +122,30 @@ float gsWeight(float4 color1,float4 color2)
 	float dif = length(color1 - color2);
 	return sqrttwopi*exp(-dif*dif*0.5);
 }
+float4 LightVS(
+		in float4 vPos : POSITION0,
+		out float4 vPosition : TEXCOORD0
+		):POSITION0
+{
+    float4 outPut;
+	outPut = mul(vPos,g_mWorld);
+	outPut = mul(outPut,g_mViewProjection);
+	vPosition = outPut;
+	return outPut;
+}
 float4 LightPS(
-		in float2 vScreenPosition : TEXCOORD0
+		//in float2 vScreenPosition : TEXCOORD0
+		in float4 vPosition : TEXCOORD0
 		):COLOR
 {
+//return g_LightColor*0.1;
+    float2 vScreenPosition;
+    vScreenPosition = vPosition.xy/vPosition.w;
+	vScreenPosition.y = -vScreenPosition.y;
+	vScreenPosition = vScreenPosition*0.5 + 0.5;
+
 	float4 cBaseColor = tex2D( diffuseMap, vScreenPosition );
+
 	float3 vNormal = tex2D( normalMap, vScreenPosition).xyz;
 	float4 vPos = tex2D( positionMap, vScreenPosition);
 	float4 vPosLight = mul(vPos,g_mLightVP);
@@ -149,7 +155,7 @@ float4 LightPS(
 	float lightLenSq = vLight.x*vLight.x + vLight.y*vLight.y + vLight.z*vLight.z;
 	vLight = normalize(vLight);
 	vViewDir = normalize(vViewDir);
-
+	lightDir = normalize(lightDir);
 	float fshadow = 0.0;
 	float lightAmout = 0.0;
 	float cosalpha = dot( vLight,  lightDir);
@@ -171,10 +177,29 @@ float4 LightPS(
 
 		 if(cosalpha > g_fInnerCosTheta)
 		      lightAmout = 1.0;
-	     lightAmout = 1000.0*lightAmout/lightLenSq;
+	    // lightAmout = 100.0*lightAmout/lightLenSq;
    }
+   float4 cDiffuse = max(dot(vNormal,-lightDir) ,0)*lightAmout*fshadow*g_LightColor ;
+
+   float4 cSpecular = 0;
+   float3 halfvec = vViewDir - lightDir;
+   halfvec = normalize(halfvec);
+   float fRdotL = saturate(dot(vNormal,halfvec));
+
+   cSpecular =  pow( fRdotL, 10)*g_LightColor;
+
+   float4 cFinalColor = cDiffuse *cBaseColor + cSpecular* fshadow*lightAmout;
+   return cFinalColor;//float4(vNormal,1);
+}
+float4 SSAOPS(
+		in float2 vScreenPosition : TEXCOORD0
+		):COLOR
+{
+   float4 cBaseColor = tex2D( diffuseMap, vScreenPosition );
+   float3 vNormal = tex2D( normalMap, vScreenPosition).xyz;
+   float4 vPos = tex2D( positionMap, vScreenPosition);
    float ao = 0;
-   float rad = 0.5/mul(vPos,g_mViewProjection).z;
+   float rad = 2.0/mul(vPos,g_mViewProjection).z;
    float totalWeight = 0;
    float weight = 0;
    for(int i=0;i<4;i++)
@@ -198,30 +223,11 @@ float4 LightPS(
 		totalWeight += weight;
    }
    ao /= totalWeight;
-  // return 1-ao;
-   float4 cDiffuse = max(dot(vNormal,-lightDir) ,0)*lightAmout*fshadow*g_LightColor + globalAmbient;
-
-   float4 cSpecular = 0;
-   float3 halfvec = vViewDir - lightDir;
-   halfvec = normalize(halfvec);
-   float fRdotL = saturate(dot(vNormal,halfvec));
-
-   cSpecular =  pow( fRdotL, 100)*g_LightColor;
-
-   float4 cFinalColor = cDiffuse *cBaseColor + cSpecular* fshadow*lightAmout;
-   cFinalColor.a = 0.5;
-   return cFinalColor * (1.0 - ao);//float4(vNormal,1);
+  // cBaseColor.xyz *= (1-ao);
+   return cBaseColor;
 }
 
 
-technique ShadowTechnique
-{
-	pass P0
-	{
-	    VertexShader = compile vs_2_0 shadowVS();
-        PixelShader  = compile ps_2_0 shadowPS();
-	}
-}
 technique GBufferTechnique
 {
 	pass P0
@@ -230,10 +236,25 @@ technique GBufferTechnique
         PixelShader  = compile ps_2_0 GBufferPS();
 	}
 }
+technique AmbientTechnique
+{
+	pass P0
+	{
+		PixelShader  = compile ps_3_0 AmbientPS();
+	}
+}
 technique LightTechnique
 {
 	pass P0
 	{
+	    VertexShader  = compile vs_3_0 LightVS();
         PixelShader  = compile ps_3_0 LightPS();
+	}
+}
+technique SSAOTechnique
+{
+	pass P0
+	{
+        PixelShader  = compile ps_3_0 SSAOPS();
 	}
 }

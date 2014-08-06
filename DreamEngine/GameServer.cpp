@@ -36,19 +36,19 @@ bool GameServer::Init(HWND hWnd)
 	D3DXMatrixRotationZ(&rotation,90);
 	D3DXMatrixMultiply(&word,&rotation,&scale);
 	mMesh->SetWordTransform(word);
-	mD3DRender->AddRenderObject(mMesh);
+	//mD3DRender->AddRenderObject(mMesh);
 
 	
 	mMesh = new MeshRenderObject();
 	mMesh->SetEffectFromFile("res/mesh.fx");
 	mMesh->Init("Media/room.x");
-	mMesh->SetNormalMapRender();
+	mMesh->SetNormalMapRender();/*
 	std::vector<NormapMaterial>& mat1 = mMesh->GetMaterial();
 	for(int i=0;i<mat1.size();i++)
 	{
 		mat1[i].NormalMap = TextureMgr::Instance()->GetTexture("Media/stones_NM_height.tga");
 		mat1[i].Specular = 100;
-	}
+	}*/
 
 	D3DXMatrixScaling(&scale,5,5,5);
 	mMesh->SetWordTransform(scale);
@@ -57,19 +57,19 @@ bool GameServer::Init(HWND hWnd)
 
 	mMesh = new MeshRenderObject();
 	mMesh->SetEffectFromFile("res/mesh.fx");
-	mMesh->Init("Media/airplane2.x");
+	mMesh->Init("Media/Tiny/tiny.x");
 	mMesh->SetNormalMapRender();
-	D3DXMatrixTranslation(&word,8,-3,8);
-	D3DXMatrixScaling(&scale,3,3,3);
-	D3DXMatrixMultiply(&word,&scale,&word);
+	D3DXMatrixScaling(&scale,0.03,0.03,0.03);
+	D3DXMatrixRotationX(&rotation,-0.5*D3DX_PI);
+	D3DXMatrixMultiply(&word,&rotation,&scale);
 	mMesh->SetWordTransform(word);
 	mD3DRender->AddRenderObject(mMesh);
 
 
 	SpotLight* light = new SpotLight();
 	light->SetInnerAngle(D3DX_PI*0.05f);
-	light->SetOuterAngle(D3DX_PI * 0.75f);
-	light->SetColor(D3DXVECTOR4(0.0,0.5,0,1));
+	light->SetOuterAngle(D3DX_PI * 0.5f);
+	light->SetColor(D3DXVECTOR4(0.0,1,0,1));
 	light->SetPosition(D3DXVECTOR3(5,5,5));
 	light->SetDirection(D3DXVECTOR3(-1,-1,-1));
 	light->InitCamera();
@@ -81,7 +81,7 @@ bool GameServer::Init(HWND hWnd)
 	light->SetOuterAngle(D3DX_PI * 0.5f);
 	light->SetPosition(D3DXVECTOR3(-5,5,-5));
 	light->SetDirection(D3DXVECTOR3(1,-1,1));
-	light->SetColor(D3DXVECTOR4(0.5,0,0,1));
+	light->SetColor(D3DXVECTOR4(1,0,0,1));
 	light->InitCamera();
 
 	mD3DRender->AddLight(light);

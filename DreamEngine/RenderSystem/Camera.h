@@ -21,7 +21,7 @@ public:
 
 	const D3DXVECTOR3& GetEyePos() const;
 	const D3DXVECTOR3& GetEyeDir() const;
-
+	const D3DXMATRIX& GetRotationMat() const;
 	//设置摄像机移动速度
 	void SetMoveVelocity( float fVelocity );
 
@@ -53,6 +53,7 @@ public:
 	/// 摄像机的方向
 	D3DXVECTOR3 m_Direction;
 
+	D3DXMATRIX  m_Rotation;
 	/// 近视表面的距离
 	float m_fNear;
 	/// 远视表面的距离
@@ -93,7 +94,10 @@ inline const D3DXVECTOR3& CCamera::GetEyeDir() const
 {
 	return m_Direction;
 }
-
+inline const D3DXMATRIX& CCamera::GetRotationMat() const
+{
+	return m_Rotation;
+}
 // 第一人称摄像机类，提供第一人称方式的摄像机移动和旋转
 //此类包括了如下知识点：
 

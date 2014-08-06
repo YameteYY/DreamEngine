@@ -1,5 +1,6 @@
 #include "Light.h"
 
+const DWORD VertexType::FVF = D3DFVF_XYZW;
 Light::Light():mPosition(5,5,0),mDirection(-1,-1,0),mColor(1,1,1,1)
 {
 	mCamera.SetProjParams(D3DX_PI * 0.25f,(float)4.0f / (float)3.0f,1.0f,1000.0f );

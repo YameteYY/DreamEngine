@@ -5,6 +5,7 @@
 
 void DeferredShading::Init(D3DDISPLAYMODE d3ddm)
 {
+	mUsedSSAO = true;
 	mWindowHeight = d3ddm.Height;
 	mWindowWidth = d3ddm.Width;
 
@@ -45,6 +46,13 @@ void DeferredShading::Init(D3DDISPLAYMODE d3ddm)
 		D3DPOOL_DEFAULT,
 		&mDiffuseTex,
 		NULL );
+
+	g_pd3dDevice->CreateTexture( mWindowWidth, mWindowHeight,
+		1, D3DUSAGE_RENDERTARGET,
+		D3DFMT_A8R8G8B8,
+		D3DPOOL_DEFAULT,
+		&mLightPassTex,
+		NULL );
 }
 void DeferredShading::ClearTexture(IDirect3DTexture9* pd3dTexture,D3DCOLOR xColor)
 {
@@ -63,7 +71,6 @@ void DeferredShading::SetRenderTarget(int iRenderTargetIdx,LPDIRECT3DTEXTURE9 pd
 }
 void DeferredShading::RenderGBuffer(std::vector<RenderObject*> renderObjList)
 {
-
 	LPDIRECT3DSURFACE9 pOldRT[3] = {0};
 	g_pd3dDevice->GetRenderTarget(0,&pOldRT[0]);
 	g_pd3dDevice->GetRenderTarget(1,&pOldRT[1]);
@@ -78,7 +85,7 @@ void DeferredShading::RenderGBuffer(std::vector<RenderObject*> renderObjList)
 	g_pd3dDevice->SetRenderTarget(0,pDiffuseTex);
 	g_pd3dDevice->SetRenderTarget(1,pNormalTex);
 	g_pd3dDevice->SetRenderTarget(2,pPositionTex);
-	
+
 	CCamera* g_camera = D3DRender::Instance()->GetCamera();
 	const D3DXMATRIX *mProj = g_camera->GetProjTrans();
 	const D3DXMATRIX *mView = g_camera->GetViewTrans();
@@ -99,13 +106,16 @@ void DeferredShading::RenderGBuffer(std::vector<RenderObject*> renderObjList)
 		renderObjList[i]->Render(GBuffer);
 		renderObjList[i]->SetEffect(effect);
 	}
+	//std::vector<Light*>* lightList = D3DRender::Instance()->GetLightList();
+	//(*lightList)[0]->Render(mDeferredEffect);
+
 	g_pd3dDevice->EndScene();
 	g_pd3dDevice->Present(0,0,0,0);
-	
+
 	g_pd3dDevice->SetRenderTarget( 0, pOldRT[0] );
 	g_pd3dDevice->SetRenderTarget( 1, pOldRT[1] );
 	g_pd3dDevice->SetRenderTarget( 2, pOldRT[2] );
-	
+
 	SAFE_RELEASE( pOldRT[0] );
 	SAFE_RELEASE( pOldRT[1] );
 	SAFE_RELEASE( pOldRT[2] );
@@ -115,10 +125,22 @@ void DeferredShading::RenderGBuffer(std::vector<RenderObject*> renderObjList)
 }
 void DeferredShading::RenderLight(std::vector<Light*>* lightList)
 {
+	LPDIRECT3DSURFACE9 pOldRT = 0;
+	PDIRECT3DSURFACE9 pLightPassTex = NULL;
+	if(mUsedSSAO)
+	{
+		g_pd3dDevice->GetRenderTarget(0,&pOldRT);
+
+		mLightPassTex->GetSurfaceLevel(0,&pLightPassTex);
+		g_pd3dDevice->SetRenderTarget(0,pLightPassTex);
+	}
 	g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.0f, 0.0f, 0.0f ), 1.0f,
 		0 );
 	g_pd3dDevice->BeginScene();
-	
+	g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE,true);
+	g_pd3dDevice->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
+	g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ONE);
+
 	CCamera* g_camera = D3DRender::Instance()->GetCamera();
 	const D3DXVECTOR3& eyePos = g_camera->GetEyePos();
 	std::vector<LPDIRECT3DTEXTURE9>* shadowMapList = D3DRender::Instance()->GetShadowMap();
@@ -126,15 +148,36 @@ void DeferredShading::RenderLight(std::vector<Light*>* lightList)
 	mDeferredEffect->SetTexture("DiffuseMap",mDiffuseTex);
 	mDeferredEffect->SetTexture("NormalMap",mNormalTex);
 	mDeferredEffect->SetTexture("PositionMap",mPositionTex);
+
+
+	mDeferredEffect->SetTechnique("AmbientTechnique");
+	UINT uiPassCount, uiPass;
+	mDeferredEffect->Begin( &uiPassCount, 0 );
+	for( uiPass = 0; uiPass < uiPassCount; uiPass++ )
+	{
+		mDeferredEffect->BeginPass(uiPass);
+		DrawFullScreenQuad(g_pd3dDevice,0,0,1,1);
+		mDeferredEffect->EndPass();
+	}
+	mDeferredEffect->End();
 	mDeferredEffect->SetTechnique("LightTechnique");
+	const D3DXMATRIX *mProj = g_camera->GetProjTrans();
+	const D3DXMATRIX *mView = g_camera->GetViewTrans();
+	D3DXMATRIX vp;
+	D3DXMatrixMultiply(&vp,mView,mProj);
+	mDeferredEffect->SetMatrix("g_mViewProjection",&vp);
 	mDeferredEffect->CommitChanges();
-	g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE,true);
-	g_pd3dDevice->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
-	g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ONE);
+	//g_pd3dDevice->SetRenderState(D3DRS_CULLMODE,D3DCULL_CW);
+	g_pd3dDevice ->SetRenderState(D3DRS_ZFUNC,D3DCMP_ALWAYS);
 	int len = lightList->size();
 	for(int i=0;i<len;i++)
 	{
 		mDeferredEffect->SetTexture("ShadowMap",(*shadowMapList)[i]);
+
+		(*lightList)[i]->SetShaderParam(mDeferredEffect);
+		mDeferredEffect->CommitChanges();
+		(*lightList)[i]->Render(mDeferredEffect);
+		/*
 		UINT uiPassCount, uiPass;
 		mDeferredEffect->Begin( &uiPassCount, 0 );
 		for( uiPass = 0; uiPass < uiPassCount; uiPass++ )
@@ -145,9 +188,42 @@ void DeferredShading::RenderLight(std::vector<Light*>* lightList)
 			DrawFullScreenQuad(g_pd3dDevice,0,0,1,1);
 			mDeferredEffect->EndPass();
 		}
-		mDeferredEffect->End();
+		mDeferredEffect->End();*/
 	}
 	g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE,false);
+	g_pd3dDevice->EndScene();
+	g_pd3dDevice->Present(0,0,0,0);
+	g_pd3dDevice ->SetRenderState(D3DRS_ZFUNC,D3DCMP_LESS);
+	if(mUsedSSAO)
+	{
+		g_pd3dDevice->SetRenderTarget( 0, pOldRT);
+		SAFE_RELEASE( pOldRT);
+		SAFE_RELEASE(pLightPassTex);
+	}
+}
+void DeferredShading::RenderSSAO()
+{
+	if(!mUsedSSAO)
+		return;
+	g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.0f, 0.0f, 0.0f ), 1.0f,
+		0 );
+	g_pd3dDevice->BeginScene();
+
+	mDeferredEffect->SetTexture("DiffuseMap",mLightPassTex);
+	mDeferredEffect->SetTexture("NormalMap",mNormalTex);
+	mDeferredEffect->SetTexture("PositionMap",mPositionTex);
+	mDeferredEffect->SetTechnique("SSAOTechnique");
+	mDeferredEffect->CommitChanges();
+
+	UINT uiPassCount, uiPass;
+	mDeferredEffect->Begin( &uiPassCount, 0 );
+	for( uiPass = 0; uiPass < uiPassCount; uiPass++ )
+	{
+		mDeferredEffect->BeginPass(uiPass);
+		DrawFullScreenQuad(g_pd3dDevice,0,0,1,1);
+		mDeferredEffect->EndPass();
+	}
+	mDeferredEffect->End();
 	g_pd3dDevice->EndScene();
 	g_pd3dDevice->Present(0,0,0,0);
 }

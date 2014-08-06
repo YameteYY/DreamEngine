@@ -1,4 +1,4 @@
-#define SMAP_SIZE 512
+#define SMAP_SIZE 1024
 #define SHADOW_EPSILON 0.000005f
 
 static const float4 globalAmbient  = float4(0.1, 0.1, 0.1,0.1);

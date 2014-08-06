@@ -32,12 +32,13 @@ bool MeshRenderObject::Init(const char* meshName)
 		NULL,
 		&mNumMesh,
 		&mMesh);
-
 	if(FAILED(hr))
 	{
 		::MessageBox(0, "D3DXLoadMeshFromX() - FAILED", 0, 0);
 		return false;
 	}
+	mMeshTable = new D3DXATTRIBUTERANGE[mNumMesh];
+	mMesh->GetAttributeTable(mMeshTable,NULL);
 
 	if( mtrlBuffer != 0 && mNumMesh != 0 )
 	{
@@ -182,7 +183,6 @@ bool MeshRenderObject::Init(const char* meshName)
 
 	SAFE_RELEASE(adjBuffer); // Done with buffer.
 
-	
 	mMeshTable = new D3DXATTRIBUTERANGE[mNumMesh];
 	mMesh->GetAttributeTable(mMeshTable,NULL);
 	mMesh->GetVertexBuffer(&mVertexBuffer);

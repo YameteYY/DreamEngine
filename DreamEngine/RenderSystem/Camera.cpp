@@ -44,6 +44,8 @@ void CCamera::SetViewParams( D3DXVECTOR3 &pos, D3DXVECTOR3 &lookat, D3DXVECTOR3 
 	m_fCameraYawAngle   = atan2f( pZBasis->x, pZBasis->z );
 	float fLen = sqrtf(pZBasis->z*pZBasis->z + pZBasis->x*pZBasis->x);
 	m_fCameraPitchAngle = -atan2f( pZBasis->y, fLen );
+
+	D3DXMatrixRotationYawPitchRoll(&m_Rotation, m_fCameraYawAngle, m_fCameraPitchAngle,0.f);
 }
 
 void CCamera::SetProjParams( float fFOV, float fAspect, float fNear, float fFar  )
@@ -159,22 +161,21 @@ void CCamera::Update()
 	}
 
 	// 根据欧拉角Yaw，Pitch计算摄像机的旋转矩阵
-	D3DXMATRIX matCameraRot;
-	ZeroMemory(&matCameraRot, sizeof(D3DXMATRIX));
-	D3DXMatrixRotationYawPitchRoll(&matCameraRot, m_fCameraYawAngle, m_fCameraPitchAngle,0.f);
+	ZeroMemory(&m_Rotation, sizeof(D3DXMATRIX));
+	D3DXMatrixRotationYawPitchRoll(&m_Rotation, m_fCameraYawAngle, m_fCameraPitchAngle,0.f);
 
 	// 根据旋转矩阵将摄像机的局部方向向量和上方向向量转为全局向量
 	D3DXVECTOR3 vWorldUp, vWorldAhead;
 	D3DXVECTOR3 vLocalUp    = D3DXVECTOR3(0,1,0);
 	D3DXVECTOR3 vLocalAhead = D3DXVECTOR3(0,0,1);
-	D3DXVec3TransformCoord( &vWorldUp, &vLocalUp, &matCameraRot );
-	D3DXVec3TransformCoord( &vWorldAhead, &vLocalAhead, &matCameraRot );
+	D3DXVec3TransformCoord( &vWorldUp, &vLocalUp, &m_Rotation );
+	D3DXVec3TransformCoord( &vWorldAhead, &vLocalAhead, &m_Rotation );
 
 	if(m_bIsTrans)
 	{
 		// 将局部偏移量转到全局坐标
 		D3DXVECTOR3 vWorldDelta;
-		D3DXVec3TransformCoord( &vWorldDelta, &m_vDelta, &matCameraRot );
+		D3DXVec3TransformCoord( &vWorldDelta, &m_vDelta, &m_Rotation );
 		// 根据偏移量计算视点位置
 		m_EyePos += vWorldDelta;
 	}
@@ -237,23 +238,23 @@ void CFirstPersonCamera::Update(void)
 	else if(m_fCameraPitchAngle > D3DX_PI*0.5f)
 		m_fCameraPitchAngle = D3DX_PI*0.5f;
 
-	D3DXMATRIX matCameraRot;
+	//D3DXMATRIX matCameraRot;
 	//ZeroMemory(&matCameraRot, sizeof(D3DXMATRIX));
-	D3DXMatrixRotationYawPitchRoll(&matCameraRot, m_fCameraYawAngle, m_fCameraPitchAngle,0.f);
+	D3DXMatrixRotationYawPitchRoll(&m_Rotation, m_fCameraYawAngle, m_fCameraPitchAngle,0.f);
 
 	// 根据旋转矩阵将摄像机的局部方向向量和上方向向量转为全局向量
 	D3DXVECTOR3 vWorldUp, vWorldAhead;
 	D3DXVECTOR3 vLocalUp    = D3DXVECTOR3(0,1,0);
 	D3DXVECTOR3 vLocalAhead = D3DXVECTOR3(0,0,1);
-	D3DXVec3TransformCoord( &vWorldUp, &vLocalUp, &matCameraRot );
-	D3DXVec3TransformCoord( &vWorldAhead, &vLocalAhead, &matCameraRot );
+	D3DXVec3TransformCoord( &vWorldUp, &vLocalUp, &m_Rotation );
+	D3DXVec3TransformCoord( &vWorldAhead, &vLocalAhead, &m_Rotation );
 
 	// first trans, than look at , equal to move to final eye coordinate
 	if(m_bIsTrans)
 	{
 		// 将局部偏移量转到全局坐标
 		D3DXVECTOR3 vWorldDelta;
-		D3DXVec3TransformCoord( &vWorldDelta, &m_vDelta, &matCameraRot );
+		D3DXVec3TransformCoord( &vWorldDelta, &m_vDelta, &m_Rotation );
 		// 根据偏移量计算视点位置
 		m_EyePos += vWorldDelta;
 	}

@@ -12,6 +12,7 @@ public:
 	void Init(D3DDISPLAYMODE d3ddm);
 	void RenderGBuffer(std::vector<RenderObject*> renderObjList);
 	void RenderLight(std::vector<Light*>* lightList);
+	void RenderSSAO();
 private:
 	void ClearTexture(IDirect3DTexture9* pd3dTexture,D3DCOLOR xColor);
 	void SetRenderTarget(int iRenderTargetIdx,LPDIRECT3DTEXTURE9 pd3dRenderTargetTexture);
@@ -21,7 +22,9 @@ private:
 	LPDIRECT3DTEXTURE9			  mDiffuseTex;
 	LPDIRECT3DTEXTURE9			  mPositionTex;
 	LPDIRECT3DTEXTURE9			  mNormalTex;
+	LPDIRECT3DTEXTURE9			  mLightPassTex;
 	ID3DXEffect*				  mDeferredEffect;
+	bool						  mUsedSSAO;
 };
 
 #endif

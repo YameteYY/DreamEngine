@@ -3,6 +3,16 @@
 #include "D3DHeader.h"
 #include "Camera.h"
 
+struct VertexType
+{
+	float _x,_y,_z,_w;
+	VertexType(){}
+	VertexType(float x,float y,float z)
+	{
+		_x = x;_y = y;_z = z;_w = 1;
+	}
+	static const DWORD FVF;
+};
 class Light
 {
 public:
@@ -25,13 +35,18 @@ public:
 	virtual void InitCamera();
 	virtual void SetShaderParam(ID3DXEffect* effect);
 	CLightCamera* GetLightCamera();
+	virtual void Render(ID3DXEffect* effect){}
 protected:
+	virtual void _buildShape(){}
 	CLightCamera mCamera;
 
 	D3DXVECTOR3 mPosition;
 	D3DXVECTOR3 mDirection;
+	D3DXMATRIX  mWord;
 
 	D3DXVECTOR4 mColor;
+	IDirect3DVertexBuffer9* mVertexBuffer;
+	IDirect3DIndexBuffer9*  mIndexBuffer;
 };
 inline CLightCamera* Light::GetLightCamera()
 {

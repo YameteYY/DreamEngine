@@ -36,6 +36,6 @@ struct ScreenVertex
 
 	static const DWORD FVF = D3DFVF_XYZRHW | D3DFVF_TEX1;
 };
-#define ShadowMap_SIZE 512
+#define ShadowMap_SIZE 1024
 
 #endif
